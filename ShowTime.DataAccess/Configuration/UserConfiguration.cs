@@ -8,13 +8,12 @@ namespace ShowTime.DataAccess.Configuration
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            // Table name
             builder.ToTable("Users");
 
-            // Primary Key
+            // primary key
             builder.HasKey(u => u.Id);
 
-            // Properties
+            // properties config
             builder.Property(u => u.Email)
                 .IsRequired()
                 .HasMaxLength(150);
@@ -26,14 +25,13 @@ namespace ShowTime.DataAccess.Configuration
             builder.Property(u => u.Role)
                 .IsRequired();
 
-            // Relationships
+            // relations
+            // un user poate avea mai multe booking-uri
             builder.HasMany(u => u.Bookings)
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // If you're implementing a Favorites table (many-to-many), configure that separately
-            // using Fluent API if not using EF Core 5+ automatic many-to-many support.
         }
     }
 }
