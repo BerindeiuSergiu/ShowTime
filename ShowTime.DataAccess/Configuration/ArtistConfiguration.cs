@@ -27,9 +27,17 @@ namespace ShowTime.DataAccess.Configuration
                 .IsRequired()
                 .HasMaxLength(500);
             // configurare relatii
+
+            // un artist poate fi asociat cu mai multe festivaluri
             builder.HasMany(a => a.Festivals)
                 .WithMany(f => f.Artists)
                 .UsingEntity<Lineup>(); // Tabel de legatura pentru relatia many-to-many
+
+            // in mai multe line-up-uri poate fi asociat un artist
+            builder.HasMany(a => a.Lineups)
+                .WithOne(l => l.Artist)
+                .HasForeignKey(l => l.ArtistID);
+
         }
     }
 }

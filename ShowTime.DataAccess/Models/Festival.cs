@@ -19,6 +19,7 @@ namespace ShowTime.DataAccess.Models
         // Un festival poate avea mai multe line-up-uri
         public ICollection<Lineup> Lineups { get; set; } = new List<Lineup>();
         public ICollection<Artists> Artists { get; set; } = new List<Artists>();
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     }
 }

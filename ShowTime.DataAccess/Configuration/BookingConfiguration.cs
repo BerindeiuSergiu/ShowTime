@@ -8,13 +8,12 @@ namespace ShowTime.DataAccess.Configuration
     {
         public void Configure(EntityTypeBuilder<Booking> builder)
         {
-            // Table name
             builder.ToTable("Bookings");
 
-            // Composite Primary Key
+            // primary key
             builder.HasKey(b => new { b.FestivalId, b.UserId });
 
-            // Properties
+            // properties
             builder.Property(b => b.Type)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -22,12 +21,15 @@ namespace ShowTime.DataAccess.Configuration
             builder.Property(b => b.Price)
                 .IsRequired();
 
-            // Relationships
+            // relationships
+
+            // un festival poate avea mai multe booking-uri
             builder.HasOne(b => b.Festival)
-                .WithMany() // optionally: .WithMany(f => f.Bookings) if you add a collection on Festival
+                .WithMany(f => f.Bookings)
                 .HasForeignKey(b => b.FestivalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // un user poate avea mai multe booking-uri
             builder.HasOne(b => b.User)
                 .WithMany(u => u.Bookings)
                 .HasForeignKey(b => b.UserId)

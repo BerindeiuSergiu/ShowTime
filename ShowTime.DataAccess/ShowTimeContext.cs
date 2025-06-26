@@ -29,6 +29,9 @@ namespace ShowTime.DataAccess
         public DbSet<Festival> Festivals { get; set; }
         public DbSet<Artists> Artists { get; set; }
         public DbSet<Lineup> Lineups { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShowTimeContext).Assembly);
@@ -36,6 +39,8 @@ namespace ShowTime.DataAccess
             new ArtistConfiguration().Configure(modelBuilder.Entity<Artists>());
             new FestivalConfiguration().Configure(modelBuilder.Entity<Festival>());
             new LineupConfiguration().Configure(modelBuilder.Entity<Lineup>());
+            new UserConfiguration().Configure(modelBuilder.Entity<User>());
+            new BookingConfiguration().Configure(modelBuilder.Entity<Booking>());
         }
     }
 }
