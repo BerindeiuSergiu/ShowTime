@@ -34,7 +34,8 @@ namespace ShowTime.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShowTimeContext).Assembly);
+            //modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShowTimeContext).Assembly);
+            base.OnModelCreating(modelBuilder);
 
             new ArtistConfiguration().Configure(modelBuilder.Entity<Artists>());
             new FestivalConfiguration().Configure(modelBuilder.Entity<Festival>());

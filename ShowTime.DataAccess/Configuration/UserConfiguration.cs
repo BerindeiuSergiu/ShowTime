@@ -27,10 +27,10 @@ namespace ShowTime.DataAccess.Configuration
 
             // relations
             // un user poate avea mai multe booking-uri
-            builder.HasMany(u => u.Bookings)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasMany(u => u.Bookings)
+            //    .WithOne(b => b.User)
+            //    .HasForeignKey(b => b.UserId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

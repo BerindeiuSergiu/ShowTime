@@ -18,6 +18,7 @@ namespace ShowTime.DataAccess.Models
 
         // un user poate avea mai multe rezervari
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        
         // un user poate avea mai multe festivaluri favorite
         public ICollection<Festival> FavoriteFestivals { get; set; } = new List<Festival>();
 
