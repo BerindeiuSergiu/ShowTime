@@ -43,7 +43,7 @@ namespace ShowTime.BusinessLogic.Services
                 throw new Exception("An error occured while getting an artist bt ID");
             }
         }
-        public async Task<IEnumerable<ArtistGetDto>> GetAllArtistsAsync()
+        public async Task<IList<ArtistGetDto>> GetAllArtistsAsync()
         {
             try
             {
@@ -61,7 +61,7 @@ namespace ShowTime.BusinessLogic.Services
                     Name = artists.Name,
                     Genre = artists.Genre,
                     Image = artists.Image // asta e url
-                });
+                }).ToList();
             }
             catch(Exception e)
             {
@@ -89,21 +89,42 @@ namespace ShowTime.BusinessLogic.Services
         }
         public async Task<Artists> DeleteArtistAsync(int id)
         {
-            var artist = await _artistRepository.GetByIdAsync(id);
-            if (artist == null)
+            try
             {
-                throw new KeyNotFoundException($"Artist with ID {id} not found.");
+                var artist = await _artistRepository.GetByIdAsync(id);
+                if (artist == null)
+                {
+                    throw new KeyNotFoundException($"Artist with ID {id} not found.");
+                }
+                _artistRepository.Delete(artist);
+                return artist;
+
             }
-            _artistRepository.Delete(artist);
-            return artist;
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while deleting an artist.", ex);
+            }
         }
-        public async Task<Artists> UpdateArtistAsync(Artists artist)
+        public async Task<Artists> UpdateArtistAsync(ArtistUpdateDto artistUpdater)
         {
-            if (artist == null)
+            try
             {
-                throw new ArgumentNullException(nameof(artist));
+                var existingArtist = await _artistRepository.GetByIdAsync(artistUpdater.Id);
+                if (existingArtist == null)
+                {
+                    throw new KeyNotFoundException($"Artist with ID {artistUpdater.Id} not found.");
+                }
+                // update code
+                existingArtist.Name = artistUpdater.Name;
+                existingArtist.Genre = artistUpdater.Genre;
+                existingArtist.Image = artistUpdater.Image; // asta e url
+                return await _artistRepository.UpdateAsync(existingArtist);
+
             }
-            return await _artistRepository.UpdateAsync(artist);
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to update artist.", ex);
+            }
 
         }
     }

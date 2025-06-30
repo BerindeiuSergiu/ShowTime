@@ -14,10 +14,10 @@ namespace ShowTime.BusinessLogic.Abstractions
     public interface IArtistsService
     {
         Task<ArtistGetDto> GetByIDAsync(int d);
-        Task<IEnumerable<ArtistGetDto>> GetAllArtistsAsync();
+        Task<IList<ArtistGetDto>> GetAllArtistsAsync();
         Task<Artists> AddArtistAsync(ArtistCreateDto artistCreateDto);
         Task<Artists> DeleteArtistAsync(int id);
-        Task<Artists> UpdateArtistAsync(Artists artist);
+        Task<Artists> UpdateArtistAsync(ArtistUpdateDto artist);
 
     }
 }

@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using ShowTime.BusinessLogic.Abstractions;
+using ShowTime.BusinessLogic.Services;
 using ShowTime.Client.Pages;
 using ShowTime.Components;
 using ShowTime.DataAccess;
@@ -18,6 +20,7 @@ builder.Services.AddDbContext<ShowTimeContext>(options =>
 
 
 builder.Services.AddTransient<IGenericRepository<Artists>, GenericRepository<Artists>>();
+builder.Services.AddTransient<IArtistsService, ArtistService>();
 
 
 var app = builder.Build();

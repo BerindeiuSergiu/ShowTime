@@ -1,0 +1,32 @@
+﻿@page "/artists" 
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BussinessLogic.Dtos
+@inject IArtistsService ArtistService
+<h3>Artists</h3>
+<div class="artist-list">
+    @foreach (var artist in artists)
+    {
+        <div class="artist-card">
+            <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
+            <div class="artist-info">
+                <h3>@artist.Name</h3>
+                <p>@artist.Genre</p>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+
+
+@code {
+	private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
+
+	// practic de fiecare data cand pagina se deschide astea trebuie sa apara
+	protected override async Task OnInitializedAsync()
+	{
+		artists = await ArtistService.GetAllArtistsAsync();
+	}
+
+}

@@ -13,14 +13,14 @@ namespace ShowTime.DataAccess.GenericRepository
 
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly DbContext _context;
+        private readonly ShowTimeContext _context;
         //fiecare operatia care modifica intr-un fel baza de date e urmata de
         // _context.SaveChangesAsync() pentru a salva modificarile in baza de date
 
 
         //alt lucru important _context.Set<T> => operatii pe entitatea specificata, gen setam o anumita entitate
         //pe contextul nostru
-        public GenericRepository(DbContext context) 
+        public GenericRepository(ShowTimeContext context) 
         {
             this._context = context ?? throw new ArgumentNullException(nameof(context));
         }
