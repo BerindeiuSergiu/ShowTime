@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShowTime.BusinessLogic.Abstractions;
+using ShowTime.BusinessLogic.Dtos;
 using ShowTime.BussinessLogic.Dtos;
 using ShowTime.DataAccess.GenericInterface;
 using ShowTime.DataAccess.Models;
@@ -11,7 +12,7 @@ namespace ShowTime.BusinessLogic.Services
 {
     public class ArtistService : IArtistsService
     {
-        private readonly IGenericRepository<Artists> _artistRepository; // reference injection
+        private readonly IGenericRepository<Artists> _artistRepository; // dependency injection
         public ArtistService(IGenericRepository<Artists> artistRepository)
         {
             _artistRepository = artistRepository ?? throw new ArgumentNullException(nameof(artistRepository));
@@ -23,7 +24,13 @@ namespace ShowTime.BusinessLogic.Services
             try
             {
                 var artist = await _artistRepository.GetByIdAsync(id);
-                return null ?? new ArtistGetDto
+
+                if ( artist == null )
+                {
+                    throw new KeyNotFoundException($"Artist with ID {id} not found.");
+                }
+
+                return new ArtistGetDto
                 {
                     Id = artist.Id,
                     Name = artist.Name,
@@ -62,13 +69,23 @@ namespace ShowTime.BusinessLogic.Services
             }
         }
 
-        public async Task<Artists> AddArtistAsync(Artists artist)
+        public async Task<Artists> AddArtistAsync(ArtistCreateDto artistCreateDto)
         {
-            if (artist == null)
+            try
             {
-                throw new ArgumentNullException(nameof(artist));
+                var artist = new Artists
+                {
+                    Name = artistCreateDto.Name,
+                    Genre = artistCreateDto.Genre,
+                    Image = artistCreateDto.Image // asta e url
+                };
+
+                return await _artistRepository.AddAsync(artist);
             }
-            return await _artistRepository.AddAsync(artist);
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while adding an artist.", ex);
+            }
         }
         public async Task<Artists> DeleteArtistAsync(int id)
         {

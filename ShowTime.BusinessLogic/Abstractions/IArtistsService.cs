@@ -7,6 +7,7 @@ using ShowTime.DataAccess.GenericInterface;
 using ShowTime.DataAccess;
 using ShowTime.DataAccess.Models;
 using ShowTime.BussinessLogic.Dtos;
+using ShowTime.BusinessLogic.Dtos;
 
 namespace ShowTime.BusinessLogic.Abstractions
 {
@@ -14,7 +15,7 @@ namespace ShowTime.BusinessLogic.Abstractions
     {
         Task<ArtistGetDto> GetByIDAsync(int d);
         Task<IEnumerable<ArtistGetDto>> GetAllArtistsAsync();
-        Task<Artists> AddArtistAsync(Artists artist);
+        Task<Artists> AddArtistAsync(ArtistCreateDto artistCreateDto);
         Task<Artists> DeleteArtistAsync(int id);
         Task<Artists> UpdateArtistAsync(Artists artist);
 
