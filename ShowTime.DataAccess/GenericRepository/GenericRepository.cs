@@ -26,7 +26,7 @@ namespace ShowTime.DataAccess.GenericRepository
         }
 
         /*
-         * posibils sa fie nevoie de un context specific, de exemplu ShowTimeContext
+         * posibil sa fie nevoie de un context specific, de exemplu ShowTimeContext
         public GenericRepository(ShowTimeContext context) 
         {
             this._context = context ?? throw new ArgumentNullException(nameof(context));
