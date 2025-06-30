@@ -1,32 +1,76 @@
 ﻿@page "/artists" 
 @using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
 @using ShowTime.BussinessLogic.Dtos
+@using Microsoft.AspNetCore.Components.Forms
 @inject IArtistsService ArtistService
+<h3>Add new artist</h3>
+<EditForm Model = "@newArtist" OnValidSubmit = "AddArtist" FormName = "Add artists" >
+    <label>Name:</label>
+    <InputText @bind-Value="ArtistCreateDto.Name" class="form-control" />
+    <label>Genre:</label>
+    <InputText @bind-Value="ArtistCreateDto.Genre" class="form-control" />
+    <label>Image URL:</label>
+    <InputText @bind-Value="ArtistCreateDto.Image" class="form-control" />
+
+    <button type="submit" class="btn btn-primary">Add Artist</button>
+</EditForm>
+
+
+
+
+
+
+
+
+
 <h3>Artists</h3>
-<div class="artist-list">
-    @foreach (var artist in artists)
-    {
-        <div class="artist-card">
-            <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
-            <div class="artist-info">
-                <h3>@artist.Name</h3>
-                <p>@artist.Genre</p>
+
+
+
+
+
+
+@if (artists.Count == 0)
+{
+    <p>No artists registered</p>
+}else{
+    <div class="artist-list">
+        @foreach (var artist in artists)
+        {
+            <div class="artist-card">
+                <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
+                <div class="artist-info">
+                    <h3>@artist.Name</h3>
+                    <p>@artist.Genre</p>
+                </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 
 
 
 
 
 @code {
-	private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
+    private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
+
+    [SupplyParameterFromForm]
+    private ArtistCreateDto newArtist { get; set; } = new();
+
 
 	// practic de fiecare data cand pagina se deschide astea trebuie sa apara
 	protected override async Task OnInitializedAsync()
 	{
 		artists = await ArtistService.GetAllArtistsAsync();
 	}
+
+    private async Task AddArtist(ArtistCreateDto artistsCreateDto)
+    {
+		await ArtistService.AddArtistAsync(artistsCreateDto);
+		newArtist = new ArtistCreateDto();
+		artists = await ArtistService.GetAllArtistsAsync();
+    }
 
 }
