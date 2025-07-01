@@ -22,6 +22,9 @@ builder.Services.AddDbContext<ShowTimeContext>(options =>
 builder.Services.AddTransient<IGenericRepository<Artists>, GenericRepository<Artists>>();
 builder.Services.AddTransient<IArtistsService, ArtistService>();
 
+builder.Services.AddTransient<IGenericRepository<Festival>, GenericRepository<Festival>>();
+builder.Services.AddTransient<IFestivalService, FestivalService>();
+
 
 var app = builder.Build();
 

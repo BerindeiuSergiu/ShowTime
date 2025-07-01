@@ -5,15 +5,15 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IArtistsService ArtistService
 <h3>Add new artist</h3>
-<EditForm Model = "@newArtist" OnValidSubmit = "AddArtist" FormName = "Add artists" >
-    <label>Name:</label>
-    <InputText @bind-Value="ArtistCreateDto.Name" class="form-control" />
-    <label>Genre:</label>
-    <InputText @bind-Value="ArtistCreateDto.Genre" class="form-control" />
-    <label>Image URL:</label>
-    <InputText @bind-Value="ArtistCreateDto.Image" class="form-control" />
 
-    <button type="submit" class="btn btn-primary">Add Artist</button>
+<EditForm Model="newArtist" OnSubmit="AddArtist" FormName="AddArtistForm">
+    <label>Artist Name</label>
+    <InputText @bind-Value="newArtist.Name"></InputText>
+    <label>Artist Genre</label>
+    <InputText @bind-Value="newArtist.Genre"></InputText>
+    <label>Artist Image</label>
+    <InputText @bind-Value="newArtist.Image"></InputText>
+    <button class="btn btn-primary">Add Artist</button>
 </EditForm>
 
 
@@ -21,16 +21,7 @@
 
 
 
-
-
-
 <h3>Artists</h3>
-
-
-
-
-
-
 @if (artists.Count == 0)
 {
     <p>No artists registered</p>
@@ -66,9 +57,9 @@
 		artists = await ArtistService.GetAllArtistsAsync();
 	}
 
-    private async Task AddArtist(ArtistCreateDto artistsCreateDto)
+    private async Task AddArtist()
     {
-		await ArtistService.AddArtistAsync(artistsCreateDto);
+		await ArtistService.AddArtistAsync(newArtist);
 		newArtist = new ArtistCreateDto();
 		artists = await ArtistService.GetAllArtistsAsync();
     }
