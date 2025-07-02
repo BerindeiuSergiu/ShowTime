@@ -5,115 +5,134 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IFestivalService FestivalService
 
-<h3>Add new festival</h3>
-<EditForm Model="newFestival" OnSubmit="AddFestival" FormName="AddFestivalForm">
-    <div class="mb-3">
-        <label class="form-label">Festival Name</label>
-        <InputText @bind-Value="newFestival.Name" class="form-control"></InputText>
+
+
+<div class="festivals-container">
+
+    <div class="page-header">
+        <h1 class="page-title">Festival Management</h1>
+        <p class="page-subtitle">Manage your festivals here</p>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Location</label>
-        <InputText @bind-Value="newFestival.Location" class="form-control"></InputText>
-    </div>
 
-    <div class="mb-3">
-        <label class="form-label">Start Date</label>
-        <InputDate @bind-Value="newFestival.StartDate" class="form-control"></InputDate>
-    </div>
+    <div class="forms-section">
 
-    <div class="mb-3">
-        <label class="form-label">End Date</label>
-        <InputDate @bind-Value="newFestival.EndDate" class="form-control"></InputDate>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Splash Art (Image URL)</label>
-        <InputText @bind-Value="newFestival.SplashArt" class="form-control"></InputText>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Capacity</label>
-        <InputNumber @bind-Value="newFestival.Capacity" class="form-control"></InputNumber>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Add Festival</button>
-</EditForm>
-
-<h3>Festivals</h3>
-@if (festivals.Count == 0)
-{
-    <p>No festivals registered</p>
-}
-else
-{
-    <div class="festival-list">
-        @foreach (var festival in festivals)
-        {
-            <div class="festival-card card mb-3">
-                @if (!string.IsNullOrEmpty(festival.SplashArt))
-                {
-                    <img src="@festival.SplashArt" alt="@festival.Name" class="card-img-top festival-image" style="height: 200px; object-fit: cover;" />
-                }
-                <div class="card-body festival-info">
-                    <h3 class="card-title">@festival.Name</h3>
-                    <p class="card-text">
-                        <strong>Location:</strong> @festival.Location
-                    </p>
-                    <p class="card-text">
-                        <strong>Start Date:</strong> @festival.StartDate.ToString("MMM dd, yyyy")
-                    </p>
-                    <p class="card-text">
-                        <strong>End Date:</strong> @festival.EndDate.ToString("MMM dd, yyyy")
-                    </p>
-                    @if (festival.Capacity > 0)
-                    {
-                        <p class="card-text">
-                            <strong>Capacity:</strong> @festival.Capacity.ToString("N0")
-                        </p>
-                    }
-                    <p class="card-text">
-                        <small class="text-muted">Festival ID: @festival.Id</small>
-                    </p>
-                </div>
+        <!-- Add Festival Form -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="form-title">Add New Festival</h2>
+                <div class="form-icon add-icon">+</div>
             </div>
-        }
-    </div>
-}
 
+            <EditForm Model="newFestival" OnSubmit="AddFestival" FormName="AddFestivalForm" class="artist-form">
+                <label class="form-label">Festival Name</label>
+                <InputText @bind-Value="newFestival.Name" class="form-control" />
 
-<h3>DeleteFestival</h3>
-<EditForm Model=" deleteFestival" OnSubmit="DeleteFestival" FormName="DeleteFestivalForm">
-	<div class="mb-3">
-		<label class="form-label">Festival ID</label>
-		<InputNumber @bind-Value="deleteFestival!.Id" class="form-control"></InputNumber>
-	</div>
-	<button type="submit" class="btn btn-danger">Delete Festival</button>"
-</EditForm>
+                <label class="form-label">Location</label>
+                <InputText @bind-Value="newFestival.Location" class="form-control" />
 
+                <label class="form-label">Start Date</label>
+                <InputDate @bind-Value="newFestival.StartDate" class="form-control" />
 
-<h3>Update Festival</h3>
-<EditForm Model = "updateFestival" OnSubmit = "UpdateFestival" FormName = "UpdateFestivalForm">
-    <div>
-        <label class="form-label">Festival ID</label>
-        <InputNumber @bind-Value="updateFestival!.Id" class="form-control"></InputNumber>
-		<label class="form-label">Festival Name</label>
-		<InputText @bind-Value="updateFestival!.Name" class="form-control"></InputText>
-        <label class="form-label">Location</label>
-        <InputText @bind-Value="updateFestival!.Location" class="form-control"></InputText>
-        <label class="form-label">Start Date</label>
-		<InputDate @bind-Value="updateFestival!.StartDate" class="form-control"></InputDate>
-        <label class="form-label">End Date</label>
-		<InputDate @bind-Value="updateFestival!.EndDate" class="form-control"></InputDate>
-		<label class="form-label">Splash Art (Image URL)</label>
-		<InputText @bind-Value="updateFestival!.SplashArt" class="form-control"></InputText>
-		<label class="form-label">Capacity</label>
-		<InputNumber @bind-Value="updateFestival!.Capacity" class="form-control"></InputNumber>
+                <label class="form-label">End Date</label>
+                <InputDate @bind-Value="newFestival.EndDate" class="form-control" />
 
+                <label class="form-label">Splash Art (Image URL)</label>
+                <InputText @bind-Value="newFestival.SplashArt" class="form-control" />
 
-        <button type="submit" class="btn btn-primary">Update Festival</button>
-    </div>
-</EditForm>
+                <label class="form-label">Capacity</label>
+                <InputNumber @bind-Value="newFestival.Capacity" class="form-control" />
+
+                <button type="submit" class="btn-primary form-button">Add Festival</button>
+            </EditForm>
+        </div>
+
+        <!-- Update Festival Form -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="form-title">Update Festival</h2>
+                <div class="form-icon update-icon">✎</div>
+            </div>
+
+            <EditForm Model="updateFestival" OnSubmit="UpdateFestival" FormName="UpdateFestivalForm" class="artist-form">
+                <label class="form-label">Festival ID</label>
+                <InputNumber @bind-Value="updateFestival!.Id" class="form-control" />
+
+                <label class="form-label">Festival Name</label>
+                <InputText @bind-Value="updateFestival!.Name" class="form-control" />
+
+                <label class="form-label">Location</label>
+                <InputText @bind-Value="updateFestival!.Location" class="form-control" />
+
+                <label class="form-label">Start Date</label>
+                <InputDate @bind-Value="updateFestival!.StartDate" class="form-control" />
+
+                <label class="form-label">End Date</label>
+                <InputDate @bind-Value="updateFestival!.EndDate" class="form-control" />
+
+                <label class="form-label">Splash Art (Image URL)</label>
+                <InputText @bind-Value="updateFestival!.SplashArt" class="form-control" />
+
+                <label class="form-label">Capacity</label>
+                <InputNumber @bind-Value="updateFestival!.Capacity" class="form-control" />
+
+                <button type="submit" class="btn-primary form-button">Update Festival</button>
+            </EditForm>
+        </div>
+
+        <!-- Delete Festival Form -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="form-title">Delete Festival</h2>
+                <div class="form-icon delete-icon">×</div>
+            </div>
+
+            <EditForm Model="deleteFestival" OnSubmit="DeleteFestival" FormName="DeleteFestivalForm" class="artist-form">
+                <label class="form-label">Festival ID</label>
+                <InputNumber @bind-Value="deleteFestival!.Id" class="form-control" />
+
+                <button type="submit" class="btn-danger form-button">Delete Festival</button>
+            </EditForm>
+        </div>
+
+    </div> <!-- end forms-section -->
+    <!-- Festivals List Section -->
+    <h2 class="section-title">Festivals</h2>
+
+    @if (festivals.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🎉</div>
+            <p class="empty-title">No festivals registered</p>
+            <p class="empty-message">Start by adding a new festival using the form above.</p>
+        </div>
+    }
+    else
+    {
+        <div class="festival-list">
+            @foreach (var festival in festivals)
+            {
+                <div class="festival-card">
+                    @if (!string.IsNullOrEmpty(festival.SplashArt))
+                    {
+                        <img src="@festival.SplashArt" alt="@festival.Name" class="festival-image" />
+                    }
+                    <div class="festival-info">
+                        <h3 class="card-title">@festival.Name</h3>
+                        <p class="card-text"><strong>Location:</strong> @festival.Location</p>
+                        <p class="card-text"><strong>Start Date:</strong> @festival.StartDate.ToString("MMM dd, yyyy")</p>
+                        <p class="card-text"><strong>End Date:</strong> @festival.EndDate.ToString("MMM dd, yyyy")</p>
+                        @if (festival.Capacity > 0)
+                        {
+                            <p class="card-text"><strong>Capacity:</strong> @festival.Capacity.ToString("N0")</p>
+                        }
+                        <p class="card-text"><small class="text-muted">Festival ID: @festival.Id</small></p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 
 

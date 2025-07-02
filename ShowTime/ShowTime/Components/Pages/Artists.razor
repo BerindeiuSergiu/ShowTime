@@ -7,64 +7,116 @@
 
 
 @* newArtist!.Name ==> Null forgiving operator nu ma omoara daca e null *@
+<div class="artists-container">
+    <div class="page-header">
+        <h1 class="page-title">Artist Management</h1>
+        <p class="page-subtitle">Manage your artists collection</p>
+    </div>
 
-
-<h1>Add new artist</h1>
-<div class="newArtist">
-    <EditForm Model="newArtist" OnSubmit="AddArtist" FormName="addArtist">
-        <label>Artist Name</label>
-        <InputText @bind-Value="newArtist!.Name"></InputText>
-        <label>Artist Genre</label>
-        <InputText @bind-Value="newArtist!.Genre"></InputText>
-        <label>Artist Image</label>
-        <InputText @bind-Value="newArtist!.Image"></InputText>
-        <button type="submit" class="btn btn-primary">Add Artist</button>
-    </EditForm>
-</div>
-
-<div class="deleteArtist">
-    <h3>Delete Artist</h3>
-    <EditForm Model="deleteArtist" OnSubmit="DeleteArtist" FormName="deleteArtist">
-        <label>Artist ID</label>
-        <InputNumber @bind-Value="deleteArtist!.Id"></InputNumber>
-        <button type="submit" class="btn btn-danger">Delete Artist</button>
-    </EditForm>
-</div>
-
-<h3>Update Artist</h3>
-<EditForm Model="updateArtist" OnSubmit="UpdateArtist" FormName="updateArtist">
-    <label>Artist ID</label>
-    <InputNumber @bind-Value="updateArtist!.Id"></InputNumber>
-    <label>Artist Name</label>
-    <InputText @bind-Value="updateArtist!.Name"></InputText>
-    <label>Artist Genre</label>
-    <InputText @bind-Value="updateArtist!.Genre"></InputText>
-    <label>Artist Image</label>
-    <InputText @bind-Value="updateArtist!.Image"></InputText>
-    <button type="submit" class="btn btn-success">Update Artist</button>
-</EditForm>
-
-<h3>Artists</h3>
-@if (artists.Count == 0)
-{
-    <p>No artists registered</p>
-}
-else
-{
-    <div class="artist-list">
-        @foreach (var artist in artists)
-        {
-            <div class="artist-card">
-                <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
-                <div class="artist-info">
-                    <h3>@artist.Name</h3>
-                    <p>@artist.Genre</p>
+    <div class="forms-section">
+        <!-- Add Artist Form -->
+        <div class="form-card add-form">
+            <div class="form-header">
+                <h2 class="form-title">Add New Artist</h2>
+                <div class="form-icon add-icon">+</div>
+            </div>
+            <EditForm Model="newArtist" OnSubmit="AddArtist" FormName="addArtist" class="artist-form">
+                <div class="form-group">
+                    <label class="form-label">Artist Name</label>
+                    <InputText @bind-Value="newArtist!.Name" class="form-input"></InputText>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Genre</label>
+                    <InputText @bind-Value="newArtist!.Genre" class="form-input"></InputText>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image URL</label>
+                    <InputText @bind-Value="newArtist!.Image" class="form-input"></InputText>
+                </div>
+                <button type="submit" class="form-button add-button">Add Artist</button>
+            </EditForm>
+        </div>
+
+        <!-- Update Artist Form -->
+        <div class="form-card update-form">
+            <div class="form-header">
+                <h2 class="form-title">Update Artist</h2>
+                <div class="form-icon update-icon">✏️</div>
+            </div>
+            <EditForm Model="updateArtist" OnSubmit="UpdateArtist" FormName="updateArtist" class="artist-form">
+                <div class="form-group">
+                    <label class="form-label">Artist ID</label>
+                    <InputNumber @bind-Value="updateArtist!.Id" class="form-input"></InputNumber>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Artist Name</label>
+                    <InputText @bind-Value="updateArtist!.Name" class="form-input"></InputText>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Genre</label>
+                    <InputText @bind-Value="updateArtist!.Genre" class="form-input"></InputText>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Image URL</label>
+                    <InputText @bind-Value="updateArtist!.Image" class="form-input"></InputText>
+                </div>
+                <button type="submit" class="form-button update-button">Update Artist</button>
+            </EditForm>
+        </div>
+
+        <!-- Delete Artist Form -->
+        <div class="form-card delete-form">
+            <div class="form-header">
+                <h2 class="form-title">Delete Artist</h2>
+                <div class="form-icon delete-icon">🗑️</div>
+            </div>
+            <EditForm Model="deleteArtist" OnSubmit="DeleteArtist" FormName="deleteArtist" class="artist-form">
+                <div class="form-group">
+                    <label class="form-label">Artist ID</label>
+                    <InputNumber @bind-Value="deleteArtist!.Id" class="form-input"></InputNumber>
+                </div>
+                <button type="submit" class="form-button delete-button">Delete Artist</button>
+            </EditForm>
+        </div>
+    </div>
+
+    <!-- Artists Display Section -->
+    <div class="artists-display-section">
+        <div class="section-header">
+            <h2 class="section-title">Artists Collection</h2>
+            <div class="artists-count">Total: @artists.Count</div>
+        </div>
+
+        @if (artists.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">🎨</div>
+                <h3 class="empty-title">No Artists Yet</h3>
+                <p class="empty-message">Start building your collection by adding your first artist above!</p>
+            </div>
+        }
+        else
+        {
+            <div class="artists-grid">
+                @foreach (var artist in artists)
+                {
+                    <div class="artist-card">
+                        <div class="artist-image-container">
+                            <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
+                            <div class="artist-overlay">
+                                <span class="artist-id">ID: @artist.Id</span>
+                            </div>
+                        </div>
+                        <div class="artist-details">
+                            <h3 class="artist-name">@artist.Name</h3>
+                            <p class="artist-genre">@artist.Genre</p>
+                        </div>
+                    </div>
+                }
             </div>
         }
     </div>
-}
-
+</div>
 @code {
     private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
 
