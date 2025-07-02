@@ -1,31 +1,56 @@
-﻿@page "/artists" 
+﻿@page "/artists"
 @using ShowTime.BusinessLogic.Abstractions
 @using ShowTime.BusinessLogic.Dtos
 @using ShowTime.BussinessLogic.Dtos
 @using Microsoft.AspNetCore.Components.Forms
 @inject IArtistsService ArtistService
-<h3>Add new artist</h3>
 
-<EditForm Model="newArtist" OnSubmit="AddArtist" FormName="AddArtistForm">
+
+@* newArtist!.Name ==> Null forgiving operator nu ma omoara daca e null *@
+
+
+<h1>Add new artist</h1>
+<div class="newArtist">
+    <EditForm Model="newArtist" OnSubmit="AddArtist" FormName="addArtist">
+        <label>Artist Name</label>
+        <InputText @bind-Value="newArtist!.Name"></InputText>
+        <label>Artist Genre</label>
+        <InputText @bind-Value="newArtist!.Genre"></InputText>
+        <label>Artist Image</label>
+        <InputText @bind-Value="newArtist!.Image"></InputText>
+        <button type="submit" class="btn btn-primary">Add Artist</button>
+    </EditForm>
+</div>
+
+<div class="deleteArtist">
+    <h3>Delete Artist</h3>
+    <EditForm Model="deleteArtist" OnSubmit="DeleteArtist" FormName="deleteArtist">
+        <label>Artist ID</label>
+        <InputNumber @bind-Value="deleteArtist!.Id"></InputNumber>
+        <button type="submit" class="btn btn-danger">Delete Artist</button>
+    </EditForm>
+</div>
+
+<h3>Update Artist</h3>
+<EditForm Model="updateArtist" OnSubmit="UpdateArtist" FormName="updateArtist">
+    <label>Artist ID</label>
+    <InputNumber @bind-Value="updateArtist!.Id"></InputNumber>
     <label>Artist Name</label>
-    <InputText @bind-Value="newArtist.Name"></InputText>
+    <InputText @bind-Value="updateArtist!.Name"></InputText>
     <label>Artist Genre</label>
-    <InputText @bind-Value="newArtist.Genre"></InputText>
+    <InputText @bind-Value="updateArtist!.Genre"></InputText>
     <label>Artist Image</label>
-    <InputText @bind-Value="newArtist.Image"></InputText>
-    <button class="btn btn-primary">Add Artist</button>
+    <InputText @bind-Value="updateArtist!.Image"></InputText>
+    <button type="submit" class="btn btn-success">Update Artist</button>
 </EditForm>
-
-
-
-
-
 
 <h3>Artists</h3>
 @if (artists.Count == 0)
 {
     <p>No artists registered</p>
-}else{
+}
+else
+{
     <div class="artist-list">
         @foreach (var artist in artists)
         {
@@ -40,28 +65,55 @@
     </div>
 }
 
-
-
-
-
 @code {
     private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
 
     [SupplyParameterFromForm]
-    private ArtistCreateDto newArtist { get; set; } = new();
+    private ArtistCreateDto? newArtist { get; set; }
 
+    [SupplyParameterFromForm]
+    private ArtistUpdateDto? updateArtist { get; set; }
 
-	// practic de fiecare data cand pagina se deschide astea trebuie sa apara
-	protected override async Task OnInitializedAsync()
-	{
-		artists = await ArtistService.GetAllArtistsAsync();
-	}
+    [SupplyParameterFromForm]
+    private ArtistGetDto? deleteArtist { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // pentru primul load neaparat initializare sa nu fie null ca nu ii place la forms
+        newArtist ??= new ArtistCreateDto();
+        updateArtist ??= new ArtistUpdateDto();
+        deleteArtist ??= new ArtistGetDto();
+
+        artists = await ArtistService.GetAllArtistsAsync();
+    }
 
     private async Task AddArtist()
     {
-		await ArtistService.AddArtistAsync(newArtist);
-		newArtist = new ArtistCreateDto();
-		artists = await ArtistService.GetAllArtistsAsync();
+        if (newArtist != null)
+        {
+            await ArtistService.AddArtistAsync(newArtist);
+            newArtist = new ArtistCreateDto();
+            artists = await ArtistService.GetAllArtistsAsync();
+        }
     }
 
+    private async Task DeleteArtist()
+    {
+        if (deleteArtist != null)
+        {
+            await ArtistService.DeleteArtistAsync(deleteArtist.Id);
+            deleteArtist = new ArtistGetDto();
+            artists = await ArtistService.GetAllArtistsAsync();
+        }
+    }
+
+    private async Task UpdateArtist()
+    {
+        if (updateArtist != null)
+        {
+            await ArtistService.UpdateArtistAsync(updateArtist);
+            updateArtist = new ArtistUpdateDto();
+            artists = await ArtistService.GetAllArtistsAsync();
+        }
+    }
 }

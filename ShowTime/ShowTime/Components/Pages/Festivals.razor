@@ -81,14 +81,65 @@ else
     </div>
 }
 
+
+<h3>DeleteFestival</h3>
+<EditForm Model=" deleteFestival" OnSubmit="DeleteFestival" FormName="DeleteFestivalForm">
+	<div class="mb-3">
+		<label class="form-label">Festival ID</label>
+		<InputNumber @bind-Value="deleteFestival!.Id" class="form-control"></InputNumber>
+	</div>
+	<button type="submit" class="btn btn-danger">Delete Festival</button>"
+</EditForm>
+
+
+<h3>Update Festival</h3>
+<EditForm Model = "updateFestival" OnSubmit = "UpdateFestival" FormName = "UpdateFestivalForm">
+    <div>
+        <label class="form-label">Festival ID</label>
+        <InputNumber @bind-Value="updateFestival!.Id" class="form-control"></InputNumber>
+		<label class="form-label">Festival Name</label>
+		<InputText @bind-Value="updateFestival!.Name" class="form-control"></InputText>
+        <label class="form-label">Location</label>
+        <InputText @bind-Value="updateFestival!.Location" class="form-control"></InputText>
+        <label class="form-label">Start Date</label>
+		<InputDate @bind-Value="updateFestival!.StartDate" class="form-control"></InputDate>
+        <label class="form-label">End Date</label>
+		<InputDate @bind-Value="updateFestival!.EndDate" class="form-control"></InputDate>
+		<label class="form-label">Splash Art (Image URL)</label>
+		<InputText @bind-Value="updateFestival!.SplashArt" class="form-control"></InputText>
+		<label class="form-label">Capacity</label>
+		<InputNumber @bind-Value="updateFestival!.Capacity" class="form-control"></InputNumber>
+
+
+        <button type="submit" class="btn btn-primary">Update Festival</button>
+    </div>
+</EditForm>
+
+
+
+
+
+
 @code {
     private IList<FestivalGetDto> festivals = new List<FestivalGetDto>();
     [SupplyParameterFromForm]
     private FestivalCreateDto newFestival { get; set; } = new();
 
+    [SupplyParameterFromForm]
+    private FestivalUpdateDto updateFestival { get; set; } = new();
+
+    [SupplyParameterFromForm]
+    private FestivalGetDto deleteFestival { get; set; } = new();
+
+
+
     // practic de fiecare data cand pagina se deschide astea trebuie sa apara
     protected override async Task OnInitializedAsync()
     {
+        newFestival ??= new FestivalCreateDto();
+        updateFestival ??= new FestivalUpdateDto();
+        deleteFestival ??= new FestivalGetDto();
+
         festivals = await FestivalService.GetAllFestivalsAsync();
     }
 
@@ -98,4 +149,26 @@ else
         newFestival = new FestivalCreateDto();
         festivals = await FestivalService.GetAllFestivalsAsync();
     }
+
+    private async Task DeleteFestival()
+    {
+        if( deleteFestival != null)
+        {
+            await FestivalService.DeleteFestivalAsync(deleteFestival.Id);
+            deleteFestival = new FestivalGetDto();
+            festivals = await FestivalService.GetAllFestivalsAsync();
+        }
+    }
+
+    private async Task UpdateFestival()
+    {
+        if (updateFestival != null)
+        {
+            await FestivalService.UpdateFestivalAsync(updateFestival);
+            updateFestival = new FestivalUpdateDto();
+            festivals = await FestivalService.GetAllFestivalsAsync();
+        }
+    }
+
+
 }
