@@ -168,4 +168,28 @@
             artists = await ArtistService.GetAllArtistsAsync();
         }
     }
+
+    private async Task GetArtists()
+    {
+        artists = await ArtistService.GetAllArtistsAsync();
+    }
+
+
+	//   still have to integrate this method with the UI
+    //   and ofc test it, I have no clue if it works
+    private async Task GetArtistByGenre()
+    {
+        var artistListByGenre = await ArtistService.GetAllArtistsAsync();
+		artists = artistListByGenre.Where(a => a.Genre == newArtist?.Genre).ToList();
+		if (artists.Count == 0)
+		{
+			Console.WriteLine($"No artists found for genre: {newArtist?.Genre}");
+		}
+		else
+		{
+			Console.WriteLine($"Found {artists.Count} artists for genre: {newArtist?.Genre}");  
+		}
+        artists = await ArtistService.GetAllArtistsAsync();
+    }
+
 }
