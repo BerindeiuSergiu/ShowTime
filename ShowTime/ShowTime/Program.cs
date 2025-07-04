@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ShowTime.BusinessLogic.Abstractions;
 using ShowTime.BusinessLogic.Services;
-using ShowTime.Client.Pages;
 using ShowTime.Components;
 using ShowTime.DataAccess;
 using ShowTime.DataAccess.GenericInterface;
@@ -12,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveServerComponents();
 
 var connectionString = builder.Configuration.GetConnectionString("SHOWTIME_CONNECTION_STRING");
 builder.Services.AddDbContext<ShowTimeContext>(options =>
@@ -24,6 +23,10 @@ builder.Services.AddTransient<IArtistsService, ArtistService>();
 
 builder.Services.AddTransient<IGenericRepository<Festival>, GenericRepository<Festival>>();
 builder.Services.AddTransient<IFestivalService, FestivalService>();
+
+
+builder.Services.AddTransient<IGenericRepository<User>, GenericRepository<User>>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 
 var app = builder.Build();
@@ -46,7 +49,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(ShowTime.Client._Imports).Assembly);
 
 app.Run();

@@ -422,6 +422,28 @@ h1:focus {
     .page-title {
         font-size: 2rem;
     }
+
+
 }
+
+.filter-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+    .filter-section .form-group {
+        margin-bottom: 0;
+        flex-grow: 1;
+    }
+
+    .filter-section button {
+        margin-left: 1rem;
+        padding: 0.5rem 1rem;
+    }
 
 

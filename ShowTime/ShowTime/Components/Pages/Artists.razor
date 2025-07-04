@@ -3,6 +3,7 @@
 @using ShowTime.BusinessLogic.Dtos
 @using ShowTime.BussinessLogic.Dtos
 @using Microsoft.AspNetCore.Components.Forms
+@rendermode InteractiveServer
 @inject IArtistsService ArtistService
 
 
@@ -80,11 +81,33 @@
         </div>
     </div>
 
+    <!-- Filter section-->
+    <div class="form-group">
+        <label class="form-label">
+            Filter by Genre: <span style="font-weight:normal;">@SelectedGenre</span>
+        </label>
+        <select @bind="SelectedGenre" @bind:event="onchange" TValue="string" class="form-control">
+            <option value="">All Genres</option>
+            @foreach (var genre in availableGenres)
+            {
+                <option value="@genre">@genre</option>
+            }
+        </select>
+    </div>
+
+    <!-- Search section -->
+    <div class="form-group">
+        <label class="form-label">Search Artists:</label>
+        <input type="text" @bind="searchTerm" class="form-control" placeholder="Type artist name..." />
+    </div>
+
     <!-- Artists Display Section -->
     <div class="artists-display-section">
         <div class="section-header">
             <h2 class="section-title">Artists Collection</h2>
-            <div class="artists-count">Total: @artists.Count</div>
+            <div class="artists-count">
+                Showing: @GetFilteredArtists().Count() / Total: @artists.Count
+            </div>
         </div>
 
         @if (artists.Count == 0)
@@ -98,7 +121,7 @@
         else
         {
             <div class="artists-grid">
-                @foreach (var artist in artists)
+                @foreach (var artist in GetFilteredArtists())
                 {
                     <div class="artist-card">
                         <div class="artist-image-container">
@@ -118,6 +141,8 @@
     </div>
 </div>
 @code {
+    private string? SelectedGenre { get; set; }
+
     private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
 
     [SupplyParameterFromForm]
@@ -129,6 +154,13 @@
     [SupplyParameterFromForm]
     private ArtistGetDto? deleteArtist { get; set; }
 
+    //asta nu il folosesc pe moment
+    private string selectedGenre { get; set; } = string.Empty; // asta este filtrul curent
+
+    private List<string> availableGenres = new(); // o lista unica unde imi salvez genre-urile disponibile
+
+    private string searchTerm { get; set; } = string.Empty; // search term for artist name
+
     protected override async Task OnInitializedAsync()
     {
         // pentru primul load neaparat initializare sa nu fie null ca nu ii place la forms
@@ -136,7 +168,16 @@
         updateArtist ??= new ArtistUpdateDto();
         deleteArtist ??= new ArtistGetDto();
 
+        // Load initial data
+        selectedGenre = "Rap";
+
         artists = await ArtistService.GetAllArtistsAsync();
+
+        availableGenres = artists
+            .Select(a => a.Genre)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToList();
     }
 
     private async Task AddArtist()
@@ -175,21 +216,50 @@
     }
 
 
-	//   still have to integrate this method with the UI
-    //   and ofc test it, I have no clue if it works
-    private async Task GetArtistByGenre()
+    private IEnumerable<ArtistGetDto> GetFilteredArtists()
     {
-        var artistListByGenre = await ArtistService.GetAllArtistsAsync();
-		artists = artistListByGenre.Where(a => a.Genre == newArtist?.Genre).ToList();
-		if (artists.Count == 0)
-		{
-			Console.WriteLine($"No artists found for genre: {newArtist?.Genre}");
-		}
-		else
-		{
-			Console.WriteLine($"Found {artists.Count} artists for genre: {newArtist?.Genre}");  
-		}
-        artists = await ArtistService.GetAllArtistsAsync();
+        Console.WriteLine($"Current filter: {SelectedGenre ?? "None"}");
+        Console.WriteLine($"All genres: {string.Join(", ", availableGenres)}");
+        Console.WriteLine($"[DEBUG] Selected genre: '{SelectedGenre}'");
+        Console.WriteLine($"[DEBUG] Search term: '{searchTerm}'");
+
+        IEnumerable<ArtistGetDto> filtered = artists;
+
+        if (!string.IsNullOrEmpty(SelectedGenre))
+        {
+            filtered = filtered.Where(a => string.Equals(a.Genre, SelectedGenre, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filtered = filtered.Where(a => a.Name != null && a.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+
+        Console.WriteLine($"Found {filtered.Count()} artists for genre '{SelectedGenre}' and search '{searchTerm}'");
+        return filtered;
     }
+
+
+
+    private void ShowGenre()
+        {
+            // This will show a browser alert with the current value
+            // For Blazor Server, you can use JS interop, but for a quick test, just update the debug line or use Console.WriteLine
+            Console.WriteLine($"Selected genre is: {SelectedGenre}");
+
+        }
+
+
+
+    private RenderFragment ShowChoose(string? value) => (__builder) =>
+    {
+    if (value is null || value == "")
+    {
+        <option value="" disabled selected>Choose...</option>
+    }
+    };
+
+
+   
 
 }
