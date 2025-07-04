@@ -5,7 +5,8 @@ namespace ShowTime.BusinessLogic.Abstractions
 {
     public interface IUserService
     {
-        Task<UserDto?> LoginAsync(string email, string password);
-        Task<UserDto?> GetUserByEmailAsync(string email);
+        Task<LoginResponseDto?> LoginAsync(LoginDto login);
+        //Task<LoginDto?> GetUserByEmailAsync(string email);
+        // adaugare in baza si hash-uire de parole
     }
 } 

@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
 @inject IArtistsService ArtistService
+@* @attribute [Authorize(Role = "Administrator")] *@
 
 
 @* newArtist!.Name ==> Null forgiving operator nu ma omoara daca e null *@
@@ -36,7 +37,7 @@
                 </div>
                 <button type="submit" class="form-button add-button">Add Artist</button>
             </EditForm>
-        </div>
+        </div> 
 
         <!-- Update Artist Form -->
         <div class="form-card update-form">

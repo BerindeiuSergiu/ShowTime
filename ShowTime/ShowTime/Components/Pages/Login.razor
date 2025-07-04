@@ -1,60 +1,70 @@
 ﻿@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
 @using ShowTime.BusinessLogic.Abstractions
 @using ShowTime.BusinessLogic.Dtos
 @inject IUserService UserService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using ShowTime.DataAccess.Models
 
-<div class="login-container">
-    <div class="login-card">
-        <h2 class="login-title">Sign In</h2>
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+<div class="forms-section">
+    <!-- Add Artist Form -->
+    <div class="form-card add-form">
+        <div class="form-header">
+            <h2 class="form-title">LOGIN</h2>
+            <div class="form-icon add-icon">+</div>
+        </div>
+        <EditForm Model="loginInfo" OnSubmit="Authenthicate" FormName="loginForm" class="artist-form">
             <div class="form-group">
-                <label for="email">Email</label>
-                <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+                <label class="form-label">Email</label>
+                <InputText @bind-Value="loginInfo!.Email" class="form-input"></InputText>
+                <ValidationMessage For = "() => loginInfo.Email"> </ValidationMessage>
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
-                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+                <label class="form-label">Password</label>
+                <InputText @bind-Value="loginInfo!.Password" class="form-input"></InputText>
+                <ValidationMessage For="() => loginInfo.Password"> </ValidationMessage>
             </div>
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="error-message">@errorMessage</div>
-            }
-            <button type="submit" class="login-button">Login</button>
+            <button type="submit" class="form-button add-button">Login</button>
         </EditForm>
     </div>
 </div>
 
+
 @code {
-    private LoginModel loginModel = new();
-    private string? errorMessage;
 
-    private async Task HandleLogin()
+    [SupplyParameterFromForm]
+    private LoginDto loginInfo { get; set; } = new();
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = null!;
+
+    private async Task Authenthicate()
     {
-        errorMessage = null;
-        var user = await UserService.LoginAsync(loginModel.Email, loginModel.Password);
-        if (user != null)
-        {
-            // TODO: Set authentication state, redirect, etc.
-            Navigation.NavigateTo("/");
-        }
-        else
-        {
-            errorMessage = "Invalid email or password.";
-        }
-    }
+        try{
+            var response = await UserService.LoginAsync(loginInfo);
 
-    public class LoginModel
-    {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
-        public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is required.")]
-        public string Password { get; set; } = string.Empty;
+            var claims = new List<Claim>
+				{
+					new Claim(ClaimTypes.Email, loginInfo.Email),
+                    new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User))
+				};
+
+            var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsPrincipal = new ClaimsPrincipal(claimIdentity);
+
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+			Navigation.NavigateTo("/");
+
+        }catch(Exception e)
+        {
+				Console.WriteLine(e.Message);
+        }
     }
 }

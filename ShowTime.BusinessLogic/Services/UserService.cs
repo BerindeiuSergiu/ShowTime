@@ -4,39 +4,54 @@ using ShowTime.BusinessLogic.Dtos;
 using ShowTime.DataAccess.Models;
 using ShowTime.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using ShowTime.DataAccess.GenericInterface;
 
 namespace ShowTime.BusinessLogic.Services
 {
     public class UserService : IUserService
     {
-        private readonly ShowTimeContext _context;
-        public UserService(ShowTimeContext context)
+        private readonly IGenericRepository<User> _userRepo;
+        public UserService(IGenericRepository<User> userRepo)
         {
-            _context = context;
+            _userRepo = userRepo;
         }
 
-        public async Task<UserDto?> LoginAsync(string email, string password)
+        //public async Task<LoginResponseDto?> LoginAsync(LoginDto login)
+        //{
+        //    var user = await _userRepo.GetAllAsync(u => u.Email == login.Email && u.Password == login.Password);
+
+        //    if (user != null && user.Any())
+        //    {
+        //        var matchedUser = user.First();
+        //        return new LoginResponseDto
+        //        {
+        //            Role = matchedUser.Role
+        //        };
+        //    }
+
+        //    return null;
+        //}
+
+        public async Task<LoginResponseDto?> LoginAsync(LoginDto login)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-            if (user == null) return null;
-            return new UserDto
+            return new LoginResponseDto
             {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role
+
+                Role = 0
             };
+            }
         }
 
-        public async Task<UserDto?> GetUserByEmailAsync(string email)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) return null;
-            return new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role
-            };
-        }
+
+        //public async Task<LoginDto?> GetUserByEmailAsync(string email)
+        //{
+        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        //    if (user == null) return null;
+        //    return new LoginDto
+        //    {
+        //        Id = user.Id,
+        //        Email = user.Email,
+        //        Role = user.Role
+        //    };
+        //}
     }
-} 
