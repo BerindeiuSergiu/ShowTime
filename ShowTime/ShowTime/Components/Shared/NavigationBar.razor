@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components.Routing
+
+<nav class="shared-navigation">
+    <div class="nav-container">
+        <a href="/" class="nav-link @(IsActive("/") ? "active" : "")">Home</a>
+        <AuthorizeView Roles="User">
+            <a href="/artists" class="nav-link @(IsActive("/artists") ? "active" : "")">Artists</a>
+        </AuthorizeView>
+        <AuthorizeView Roles="User">
+            <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active" : "")">Festivals</a>
+        </AuthorizeView>
+    </div>
+</nav>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    
+    private bool IsActive(string path)
+    {
+        return Navigation.Uri.EndsWith(path, StringComparison.OrdinalIgnoreCase) ||
+               (path == "/" && Navigation.Uri.EndsWith("/", StringComparison.OrdinalIgnoreCase));
+    }
+} 

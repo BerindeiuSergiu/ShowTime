@@ -3,9 +3,10 @@
 @using ShowTime.BusinessLogic.Dtos
 @using ShowTime.BussinessLogic.Dtos
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
 @rendermode InteractiveServer
 @inject IArtistsService ArtistService
-@* @attribute [Authorize(Role = "Administrator")] *@
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 @* newArtist!.Name ==> Null forgiving operator nu ma omoara daca e null *@
@@ -14,73 +15,83 @@
         <h1 class="page-title">Artist Management</h1>
         <p class="page-subtitle">Manage your artists collection</p>
     </div>
+    <AuthorizeView Roles="Administrator">
+        <Authorized Context="authContext">
+            <div class="forms-section">
+                <!-- Add Artist Form -->
+                <div class="form-card add-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Add New Artist</h2>
+                        <div class="form-icon add-icon">+</div>
+                    </div>
+                    <EditForm Model="newArtist" OnSubmit="AddArtist" FormName="addArtist" class="artist-form">
+                        <div class="form-group">
+                            <label class="form-label">Artist Name</label>
+                            <InputText @bind-Value="newArtist!.Name" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Genre</label>
+                            <InputText @bind-Value="newArtist!.Genre" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Image URL</label>
+                            <InputText @bind-Value="newArtist!.Image" class="form-input"></InputText>
+                        </div>
+                        <button type="submit" class="form-button add-button">Add Artist</button>
+                    </EditForm>
+                </div>
 
-    <div class="forms-section">
-        <!-- Add Artist Form -->
-        <div class="form-card add-form">
-            <div class="form-header">
-                <h2 class="form-title">Add New Artist</h2>
-                <div class="form-icon add-icon">+</div>
-            </div>
-            <EditForm Model="newArtist" OnSubmit="AddArtist" FormName="addArtist" class="artist-form">
-                <div class="form-group">
-                    <label class="form-label">Artist Name</label>
-                    <InputText @bind-Value="newArtist!.Name" class="form-input"></InputText>
+                <!-- Update Artist Form -->
+                <div class="form-card update-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Update Artist</h2>
+                        <div class="form-icon update-icon">✏️</div>
+                    </div>
+                    <EditForm Model="updateArtist" OnSubmit="UpdateArtist" FormName="updateArtist" class="artist-form">
+                        <div class="form-group">
+                            <label class="form-label">Artist ID</label>
+                            <InputNumber @bind-Value="updateArtist!.Id" class="form-input"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Artist Name</label>
+                            <InputText @bind-Value="updateArtist!.Name" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Genre</label>
+                            <InputText @bind-Value="updateArtist!.Genre" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Image URL</label>
+                            <InputText @bind-Value="updateArtist!.Image" class="form-input"></InputText>
+                        </div>
+                        <button type="submit" class="form-button update-button">Update Artist</button>
+                    </EditForm>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Genre</label>
-                    <InputText @bind-Value="newArtist!.Genre" class="form-input"></InputText>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Image URL</label>
-                    <InputText @bind-Value="newArtist!.Image" class="form-input"></InputText>
-                </div>
-                <button type="submit" class="form-button add-button">Add Artist</button>
-            </EditForm>
-        </div> 
 
-        <!-- Update Artist Form -->
-        <div class="form-card update-form">
-            <div class="form-header">
-                <h2 class="form-title">Update Artist</h2>
-                <div class="form-icon update-icon">✏️</div>
+                <!-- Delete Artist Form -->
+                <div class="form-card delete-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Delete Artist</h2>
+                        <div class="form-icon delete-icon">🗑️</div>
+                    </div>
+                    <EditForm Model="deleteArtist" OnSubmit="DeleteArtist" FormName="deleteArtist" class="artist-form">
+                        <div class="form-group">
+                            <label class="form-label">Artist ID</label>
+                            <InputNumber @bind-Value="deleteArtist!.Id" class="form-input"></InputNumber>
+                        </div>
+                        <button type="submit" class="form-button delete-button">Delete Artist</button>
+                    </EditForm>
+                </div>
             </div>
-            <EditForm Model="updateArtist" OnSubmit="UpdateArtist" FormName="updateArtist" class="artist-form">
-                <div class="form-group">
-                    <label class="form-label">Artist ID</label>
-                    <InputNumber @bind-Value="updateArtist!.Id" class="form-input"></InputNumber>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Artist Name</label>
-                    <InputText @bind-Value="updateArtist!.Name" class="form-input"></InputText>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Genre</label>
-                    <InputText @bind-Value="updateArtist!.Genre" class="form-input"></InputText>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Image URL</label>
-                    <InputText @bind-Value="updateArtist!.Image" class="form-input"></InputText>
-                </div>
-                <button type="submit" class="form-button update-button">Update Artist</button>
-            </EditForm>
-        </div>
-
-        <!-- Delete Artist Form -->
-        <div class="form-card delete-form">
-            <div class="form-header">
-                <h2 class="form-title">Delete Artist</h2>
-                <div class="form-icon delete-icon">🗑️</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="admin-notice">
+                <div class="notice-icon">🔒</div>
+                <h3>Admin Access Required</h3>
+                <p>You need administrator privileges to add, update, or delete artists.</p>
             </div>
-            <EditForm Model="deleteArtist" OnSubmit="DeleteArtist" FormName="deleteArtist" class="artist-form">
-                <div class="form-group">
-                    <label class="form-label">Artist ID</label>
-                    <InputNumber @bind-Value="deleteArtist!.Id" class="form-input"></InputNumber>
-                </div>
-                <button type="submit" class="form-button delete-button">Delete Artist</button>
-            </EditForm>
-        </div>
-    </div>
+        </NotAuthorized>
+    </AuthorizeView>
 
     <!-- Filter section-->
     <div class="form-group">
@@ -243,24 +254,24 @@
 
 
     private void ShowGenre()
-        {
-            // This will show a browser alert with the current value
-            // For Blazor Server, you can use JS interop, but for a quick test, just update the debug line or use Console.WriteLine
-            Console.WriteLine($"Selected genre is: {SelectedGenre}");
+    {
+        // This will show a browser alert with the current value
+        // For Blazor Server, you can use JS interop, but for a quick test, just update the debug line or use Console.WriteLine
+        Console.WriteLine($"Selected genre is: {SelectedGenre}");
 
-        }
+    }
 
 
 
     private RenderFragment ShowChoose(string? value) => (__builder) =>
     {
-    if (value is null || value == "")
-    {
-        <option value="" disabled selected>Choose...</option>
-    }
+        if (value is null || value == "")
+        {
+            <option value="" disabled selected>Choose...</option>
+        }
     };
 
 
-   
+
 
 }

@@ -10,35 +10,36 @@
 @using ShowTime.DataAccess.Models
 @inject IHttpContextAccessor HttpContextAccessor
 
-<div class="forms-section">
-    <!-- Add Artist Form -->
-    <div class="form-card add-form">
-        <div class="form-header">
-            <h2 class="form-title">LOGIN</h2>
-            <div class="form-icon add-icon">+</div>
-        </div>
-
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="error-message">@errorMessage</div>
-        }
-
-        <EditForm Model="loginInfo" method="post" action="/login" FormName="loginForm" class="artist-form">
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <InputText @bind-Value="loginInfo!.Email" class="form-input"></InputText>
-                <ValidationMessage For="() => loginInfo.Email"> </ValidationMessage>
+<div class="login-container">
+    <div class="login-forms-section">
+        <div class="login-form-card">
+            <div class="login-form-header">
+                <h2 class="login-form-title">LOGIN</h2>
+                <div class="login-form-icon">🔐</div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <InputText @bind-Value="loginInfo!.Password" class="form-input" type="password"></InputText>
-                <ValidationMessage For="() => loginInfo.Password"> </ValidationMessage>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="login-error-message">@errorMessage</div>
+            }
+
+            <EditForm Model="loginInfo" method="post" action="/login" FormName="loginForm" class="login-form">
+                <div class="login-form-group">
+                    <label class="login-form-label">Email</label>
+                    <InputText @bind-Value="loginInfo!.Email" class="login-form-input"></InputText>
+                    <ValidationMessage For="() => loginInfo.Email"> </ValidationMessage>
+                </div>
+                <div class="login-form-group">
+                    <label class="login-form-label">Password</label>
+                    <InputText @bind-Value="loginInfo!.Password" class="login-form-input" type="password"></InputText>
+                    <ValidationMessage For="() => loginInfo.Password"> </ValidationMessage>
+                </div>
+                <button type="submit" class="login-form-button">Login</button>
+            </EditForm>
+            <div class="text-center mt-3">
+                <span>Don't have an account? </span>
+                <a href="/register" class="text-primary">Register here</a>
             </div>
-            <button type="submit" class="form-button add-button">Login</button>
-        </EditForm>
-        <div class="text-center mt-3">
-            <span>Don't have an account? </span>
-            <a href="/register" class="text-primary">Register here</a>
         </div>
     </div>
 </div>

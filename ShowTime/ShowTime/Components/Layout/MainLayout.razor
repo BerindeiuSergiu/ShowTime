@@ -4,9 +4,6 @@
 @inject NavigationManager Navigation
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
     <main>
         <div class="top-row px-4">
             <div class="top-row-left">
@@ -24,6 +21,10 @@
                 </AuthorizeView>
             </div>
         </div>
+        
+        <!-- Shared Navigation Bar -->
+        <ShowTime.Components.Shared.NavigationBar />
+        
         <AuthorizeView>
             <NotAuthorized>
                 <div class="alert alert-warning">

@@ -2,10 +2,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 main {
     flex: 1;
+    background: #f8f9fa;
+    position: relative;
 }
 
 .sidebar {
@@ -13,57 +16,66 @@ main {
 }
 
 .top-row {
-    background-color: #f7f7f7;
+    background-color: #f1f1f1;
     border-bottom: 1px solid #d6d5d5;
-    justify-content: space-between;
+    justify-content: flex-end;
     height: 3.5rem;
     display: flex;
     align-items: center;
+    position: relative;
+    z-index: 1001;
 }
 
 .top-row-left {
-    display: flex;
-    align-items: center;
+    margin-right: auto;
 }
 
 .top-row-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 15px;
 }
 
 .welcome-text {
-    font-size: 0.9rem;
-    color: #666;
-    margin-right: 0.5rem;
+    color: #333;
+    font-weight: 500;
+    margin-right: 10px;
 }
 
-.top-row ::deep a, .top-row ::deep .btn-link {
+.content {
+    padding-top: 0; /* Remove top padding since nav is above */
+}
+
+.navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-row > a, .top-row .btn-link {
     white-space: nowrap;
     margin-left: 1.5rem;
     text-decoration: none;
 }
 
-.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+.top-row a:hover, .top-row .btn-link:hover {
     text-decoration: underline;
 }
 
-.top-row ::deep a:first-child {
+.top-row a:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 @media (max-width: 640.98px) {
-    .top-row {
+    .top-row:not(.auth) {
+        display: none;
+    }
+
+    .top-row.auth {
         justify-content: space-between;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
+    .top-row > a, .top-row .btn-link {
         margin-left: 0;
-    }
-
-    .welcome-text {
-        display: none;
     }
 }
 
@@ -83,12 +95,6 @@ main {
         position: sticky;
         top: 0;
         z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
     }
 
     .top-row, article {

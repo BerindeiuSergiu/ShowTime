@@ -3,7 +3,9 @@
 @using ShowTime.BusinessLogic.Dtos
 @using ShowTime.BussinessLogic.Dtos
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IFestivalService FestivalService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
 
@@ -14,88 +16,99 @@
         <p class="page-subtitle">Manage your festivals here</p>
     </div>
 
+    <AuthorizeView Roles="Administrator">
+        <Authorized Context="authContext">
+            <div class="forms-section">
 
-    <div class="forms-section">
+                <!-- Add Festival Form -->
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2 class="form-title">Add New Festival</h2>
+                        <div class="form-icon add-icon">+</div>
+                    </div>
 
-        <!-- Add Festival Form -->
-        <div class="form-card">
-            <div class="form-header">
-                <h2 class="form-title">Add New Festival</h2>
-                <div class="form-icon add-icon">+</div>
+                    <EditForm Model="newFestival" OnSubmit="AddFestival" FormName="AddFestivalForm" class="artist-form">
+                        <label class="form-label">Festival Name</label>
+                        <InputText @bind-Value="newFestival.Name" class="form-control" />
+
+                        <label class="form-label">Location</label>
+                        <InputText @bind-Value="newFestival.Location" class="form-control" />
+
+                        <label class="form-label">Start Date</label>
+                        <InputDate @bind-Value="newFestival.StartDate" class="form-control" />
+
+                        <label class="form-label">End Date</label>
+                        <InputDate @bind-Value="newFestival.EndDate" class="form-control" />
+
+                        <label class="form-label">Splash Art (Image URL)</label>
+                        <InputText @bind-Value="newFestival.SplashArt" class="form-control" />
+
+                        <label class="form-label">Capacity</label>
+                        <InputNumber @bind-Value="newFestival.Capacity" class="form-control" />
+
+                        <button type="submit" class="btn-primary form-button">Add Festival</button>
+                    </EditForm>
+                </div>
+
+                <!-- Update Festival Form -->
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2 class="form-title">Update Festival</h2>
+                        <div class="form-icon update-icon">✎</div>
+                    </div>
+
+                    <EditForm Model="updateFestival" OnSubmit="UpdateFestival" FormName="UpdateFestivalForm" class="artist-form">
+                        <label class="form-label">Festival ID</label>
+                        <InputNumber @bind-Value="updateFestival!.Id" class="form-control" />
+
+                        <label class="form-label">Festival Name</label>
+                        <InputText @bind-Value="updateFestival!.Name" class="form-control" />
+
+                        <label class="form-label">Location</label>
+                        <InputText @bind-Value="updateFestival!.Location" class="form-control" />
+
+                        <label class="form-label">Start Date</label>
+                        <InputDate @bind-Value="updateFestival!.StartDate" class="form-control" />
+
+                        <label class="form-label">End Date</label>
+                        <InputDate @bind-Value="updateFestival!.EndDate" class="form-control" />
+
+                        <label class="form-label">Splash Art (Image URL)</label>
+                        <InputText @bind-Value="updateFestival!.SplashArt" class="form-control" />
+
+                        <label class="form-label">Capacity</label>
+                        <InputNumber @bind-Value="updateFestival!.Capacity" class="form-control" />
+
+                        <button type="submit" class="btn-primary form-button">Update Festival</button>
+                    </EditForm>
+                </div>
+
+                <!-- Delete Festival Form -->
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2 class="form-title">Delete Festival</h2>
+                        <div class="form-icon delete-icon">×</div>
+                    </div>
+
+                    <EditForm Model="deleteFestival" OnSubmit="DeleteFestival" FormName="DeleteFestivalForm" class="artist-form">
+                        <label class="form-label">Festival ID</label>
+                        <InputNumber @bind-Value="deleteFestival!.Id" class="form-control" />
+
+                        <button type="submit" class="btn-danger form-button">Delete Festival</button>
+                    </EditForm>
+                </div>
+
+            </div> <!-- end forms-section -->
+        </Authorized>
+        <NotAuthorized>
+            <div class="admin-notice">
+                <div class="notice-icon">🔒</div>
+                <h3>Admin Access Required</h3>
+                <p>You need administrator privileges to add, update, or delete festivals.</p>
             </div>
+        </NotAuthorized>
+    </AuthorizeView>
 
-            <EditForm Model="newFestival" OnSubmit="AddFestival" FormName="AddFestivalForm" class="artist-form">
-                <label class="form-label">Festival Name</label>
-                <InputText @bind-Value="newFestival.Name" class="form-control" />
-
-                <label class="form-label">Location</label>
-                <InputText @bind-Value="newFestival.Location" class="form-control" />
-
-                <label class="form-label">Start Date</label>
-                <InputDate @bind-Value="newFestival.StartDate" class="form-control" />
-
-                <label class="form-label">End Date</label>
-                <InputDate @bind-Value="newFestival.EndDate" class="form-control" />
-
-                <label class="form-label">Splash Art (Image URL)</label>
-                <InputText @bind-Value="newFestival.SplashArt" class="form-control" />
-
-                <label class="form-label">Capacity</label>
-                <InputNumber @bind-Value="newFestival.Capacity" class="form-control" />
-
-                <button type="submit" class="btn-primary form-button">Add Festival</button>
-            </EditForm>
-        </div>
-
-        <!-- Update Festival Form -->
-        <div class="form-card">
-            <div class="form-header">
-                <h2 class="form-title">Update Festival</h2>
-                <div class="form-icon update-icon">✎</div>
-            </div>
-
-            <EditForm Model="updateFestival" OnSubmit="UpdateFestival" FormName="UpdateFestivalForm" class="artist-form">
-                <label class="form-label">Festival ID</label>
-                <InputNumber @bind-Value="updateFestival!.Id" class="form-control" />
-
-                <label class="form-label">Festival Name</label>
-                <InputText @bind-Value="updateFestival!.Name" class="form-control" />
-
-                <label class="form-label">Location</label>
-                <InputText @bind-Value="updateFestival!.Location" class="form-control" />
-
-                <label class="form-label">Start Date</label>
-                <InputDate @bind-Value="updateFestival!.StartDate" class="form-control" />
-
-                <label class="form-label">End Date</label>
-                <InputDate @bind-Value="updateFestival!.EndDate" class="form-control" />
-
-                <label class="form-label">Splash Art (Image URL)</label>
-                <InputText @bind-Value="updateFestival!.SplashArt" class="form-control" />
-
-                <label class="form-label">Capacity</label>
-                <InputNumber @bind-Value="updateFestival!.Capacity" class="form-control" />
-
-                <button type="submit" class="btn-primary form-button">Update Festival</button>
-            </EditForm>
-        </div>
-
-        <!-- Delete Festival Form -->
-        <div class="form-card">
-            <div class="form-header">
-                <h2 class="form-title">Delete Festival</h2>
-                <div class="form-icon delete-icon">×</div>
-            </div>
-
-            <EditForm Model="deleteFestival" OnSubmit="DeleteFestival" FormName="DeleteFestivalForm" class="artist-form">
-                <label class="form-label">Festival ID</label>
-                <InputNumber @bind-Value="deleteFestival!.Id" class="form-control" />
-
-                <button type="submit" class="btn-danger form-button">Delete Festival</button>
-            </EditForm>
-        </div>
-
-    </div> <!-- end forms-section -->
     <!-- Festivals List Section -->
     <h2 class="section-title">Festivals</h2>
 
@@ -134,11 +147,6 @@
     }
 </div>
 
-
-
-
-
-
 @code {
     private IList<FestivalGetDto> festivals = new List<FestivalGetDto>();
     [SupplyParameterFromForm]
@@ -149,8 +157,6 @@
 
     [SupplyParameterFromForm]
     private FestivalGetDto deleteFestival { get; set; } = new();
-
-
 
     // practic de fiecare data cand pagina se deschide astea trebuie sa apara
     protected override async Task OnInitializedAsync()
@@ -171,7 +177,7 @@
 
     private async Task DeleteFestival()
     {
-        if( deleteFestival != null)
+        if (deleteFestival != null)
         {
             await FestivalService.DeleteFestivalAsync(deleteFestival.Id);
             deleteFestival = new FestivalGetDto();
@@ -188,6 +194,4 @@
             festivals = await FestivalService.GetAllFestivalsAsync();
         }
     }
-
-
 }
