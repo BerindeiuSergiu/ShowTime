@@ -1,0 +1,33 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager Navigation
+
+<div class="text-center">
+    <h3>Logging out...</h3>
+    <p>Please wait while we sign you out.</p>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var httpContext = HttpContextAccessor.HttpContext;
+            if (httpContext?.User.Identity?.IsAuthenticated == true)
+            {
+                await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+
+            // Redirect to login page after logout
+            httpContext?.Response.Redirect("/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Logout failed: {ex.Message}");
+            // Fallback navigation if HTTP redirect fails
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

@@ -10,12 +10,13 @@ using ShowTime.DataAccess.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.Cookie.Name = "auth-token";
         options.LoginPath = "/login";
-        options.AccessDeniedPath = "/access-denied";
+        //options.AccessDeniedPath = "/access-denied";
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
 
@@ -66,5 +67,7 @@ app.UseAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(ShowTime.Client._Imports).Assembly);
+
+
 
 app.Run();

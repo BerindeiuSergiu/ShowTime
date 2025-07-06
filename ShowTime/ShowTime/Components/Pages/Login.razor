@@ -5,10 +5,10 @@
 @using ShowTime.BusinessLogic.Dtos
 @inject IUserService UserService
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
 @using ShowTime.DataAccess.Models
+@inject IHttpContextAccessor HttpContextAccessor
 
 <div class="forms-section">
     <!-- Add Artist Form -->
@@ -17,19 +17,29 @@
             <h2 class="form-title">LOGIN</h2>
             <div class="form-icon add-icon">+</div>
         </div>
-        <EditForm Model="loginInfo" OnSubmit="Authenthicate" FormName="loginForm" class="artist-form">
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">@errorMessage</div>
+        }
+
+        <EditForm Model="loginInfo" method="post" action="/login" FormName="loginForm" class="artist-form">
             <div class="form-group">
                 <label class="form-label">Email</label>
                 <InputText @bind-Value="loginInfo!.Email" class="form-input"></InputText>
-                <ValidationMessage For = "() => loginInfo.Email"> </ValidationMessage>
+                <ValidationMessage For="() => loginInfo.Email"> </ValidationMessage>
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <InputText @bind-Value="loginInfo!.Password" class="form-input"></InputText>
+                <InputText @bind-Value="loginInfo!.Password" class="form-input" type="password"></InputText>
                 <ValidationMessage For="() => loginInfo.Password"> </ValidationMessage>
             </div>
             <button type="submit" class="form-button add-button">Login</button>
         </EditForm>
+        <div class="text-center mt-3">
+            <span>Don't have an account? </span>
+            <a href="/register" class="text-primary">Register here</a>
+        </div>
     </div>
 </div>
 
@@ -42,29 +52,64 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = null!;
 
-    private async Task Authenthicate()
-    {
-        try{
-            var response = await UserService.LoginAsync(loginInfo);
+    private string errorMessage = string.Empty;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Handle form submission on POST
+        if (HttpContextAccessor.HttpContext?.Request.Method == "POST")
+        {
+            await Authenticate();
+        }
+
+        // Check if already authenticated
+        else if (HttpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    private async Task Authenticate()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(loginInfo.Email) || string.IsNullOrEmpty(loginInfo.Password))
+            {
+                errorMessage = "Please enter both email and password.";
+                return;
+            }
+
+            //aici aveam probleme 
+            if (HttpContext == null)
+            {
+                errorMessage = "Authentication context is not available.";
+                return;
+            }
+
+            var response = await UserService.LoginAsync(loginInfo);
+            if (response == null)
+            {
+                errorMessage = "Invalid email or password.";
+                return;
+            }
 
             var claims = new List<Claim>
-				{
-					new Claim(ClaimTypes.Email, loginInfo.Email),
-                    new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User))
-				};
+        {
+            new Claim(ClaimTypes.Email, loginInfo.Email),
+            new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User))
+        };
 
             var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimsPrincipal = new ClaimsPrincipal(claimIdentity);
 
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-			Navigation.NavigateTo("/");
-
-        }catch(Exception e)
+            await HttpContext!.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+            HttpContext.Response.Redirect("/");
+        }
+        catch (Exception e)
         {
-				Console.WriteLine(e.Message);
+            errorMessage = "An error occurred during login. Please try again.";
+            Console.WriteLine($"Login error: {e.Message}");
         }
     }
 }
+

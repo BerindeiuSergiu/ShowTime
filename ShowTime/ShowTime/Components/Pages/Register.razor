@@ -1,0 +1,109 @@
+﻿@page "/register"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using ShowTime.DataAccess.Models
+
+<div class="register-container">
+    <div class="register-card">
+        <h2 class="register-title">Create Account</h2>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">@errorMessage</div>
+        }
+        
+        <EditForm Model="registerInfo" OnSubmit="SignUP" FormName="registerForm">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <InputText @bind-Value="registerInfo!.Email" class="form-control" placeholder="Enter your email"></InputText>
+                <ValidationMessage For="() => registerInfo.Email"> </ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <InputText @bind-Value="registerInfo!.Password" class="form-control" type="password" placeholder="Enter your password"></InputText>
+                <ValidationMessage For="() => registerInfo.Password"> </ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <InputText @bind-Value="confirmPassword" class="form-control" type="password" placeholder="Confirm your password"></InputText>
+                @if (!string.IsNullOrEmpty(confirmPassword) && registerInfo?.Password != confirmPassword)
+                {
+                    <div class="password-mismatch">Passwords do not match</div>
+                }
+            </div>
+            <button type="submit" class="register-button" disabled="@(!CanSubmit)">Create Account</button>
+        </EditForm>
+        <div class="text-center mt-3">
+            <span>Already have an account? </span>
+            <a href="/login" class="text-primary">Sign in here</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private UserCreateDto registerInfo { get; set; } = new();
+
+    private string confirmPassword = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private bool CanSubmit => !string.IsNullOrEmpty(registerInfo?.Email) && 
+                             !string.IsNullOrEmpty(registerInfo?.Password) && 
+                             registerInfo.Password == confirmPassword &&
+                             registerInfo.Password.Length >= 6;
+
+    protected override void OnInitialized()
+    {
+        registerInfo ??= new UserCreateDto();
+        // Set default role to User (1)
+        registerInfo.Role = (int)Role.User;
+    }
+
+    private async Task SignUP()
+    {
+        try
+        {
+            // Validate input
+            if (string.IsNullOrEmpty(registerInfo.Email) || string.IsNullOrEmpty(registerInfo.Password))
+            {
+                errorMessage = "Please fill in all fields.";
+                return;
+            }
+
+            if (registerInfo.Password != confirmPassword)
+            {
+                errorMessage = "Passwords do not match.";
+                return;
+            }
+
+            if (registerInfo.Password.Length < 6)
+            {
+                errorMessage = "Password must be at least 6 characters long.";
+                return;
+            }
+
+            // Create user
+            await UserService.CreateUserAsync(registerInfo);
+            
+            // Clear form
+            registerInfo = new UserCreateDto { Role = (int)Role.User };
+            confirmPassword = string.Empty;
+            errorMessage = string.Empty;
+            
+            // Redirect to login page
+            Navigation.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while creating your account. Please try again.";
+            Console.WriteLine($"Registration error: {ex.Message}");
+        }
+    }
+}

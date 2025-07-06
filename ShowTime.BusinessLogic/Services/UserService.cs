@@ -16,42 +16,57 @@ namespace ShowTime.BusinessLogic.Services
             _userRepo = userRepo;
         }
 
-        //public async Task<LoginResponseDto?> LoginAsync(LoginDto login)
-        //{
-        //    var user = await _userRepo.GetAllAsync(u => u.Email == login.Email && u.Password == login.Password);
-
-        //    if (user != null && user.Any())
-        //    {
-        //        var matchedUser = user.First();
-        //        return new LoginResponseDto
-        //        {
-        //            Role = matchedUser.Role
-        //        };
-        //    }
-
-        //    return null;
-        //}
-
         public async Task<LoginResponseDto?> LoginAsync(LoginDto login)
         {
-            return new LoginResponseDto
+            try
             {
+                var users = await _userRepo.GetAllAsync();
+                var matchedUser = users.FirstOrDefault(u => u.Email == login.Email && u.Password == login.Password);
+                
+                if (matchedUser == null)
+                {
+                    return null;
+                }
 
-                Role = 0
-            };
+                return new LoginResponseDto
+                {
+                    Role = matchedUser.Role
+                };
+            }
+            catch(Exception ex)
+            {
+                // Log the exception (not implemented here)
+                return null;
             }
         }
+    
+        public async Task<UserCreateDto> CreateUserAsync(UserCreateDto userCreateDto)
+        {
+            try
+            {
+                // Check if user already exists
+                var users = await _userRepo.GetAllAsync();
+                var existingUser = users.FirstOrDefault(u => u.Email == userCreateDto.Email);
+                
+                if (existingUser != null)
+                {
+                    throw new InvalidOperationException("A user with this email already exists.");
+                }
 
-
-        //public async Task<LoginDto?> GetUserByEmailAsync(string email)
-        //{
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        //    if (user == null) return null;
-        //    return new LoginDto
-        //    {
-        //        Id = user.Id,
-        //        Email = user.Email,
-        //        Role = user.Role
-        //    };
-        //}
+                var user = new User
+                {
+                    Email = userCreateDto.Email,
+                    Password = userCreateDto.Password,
+                    Role = userCreateDto.Role
+                };
+                
+                await _userRepo.AddAsync(user);
+                return userCreateDto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to create user: {ex.Message}", ex);
+            }
+        }
     }
+}
