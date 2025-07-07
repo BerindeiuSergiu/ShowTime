@@ -94,10 +94,17 @@
                 return;
             }
 
+            // Retrieve user ID by email
+            var users = await UserService.GetAllUsersAsync();
+            var user = users.FirstOrDefault(u => u.Email == loginInfo.Email);
+            var userId = user?.Id.ToString() ?? string.Empty;
+
             var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Email, loginInfo.Email),
-            new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User))
+            new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User)),
+            // DACA NU COMENTEZ ASTA CRAPAA
+            //new Claim(ClaimTypes.NameIdentifier, userId)
         };
 
             var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

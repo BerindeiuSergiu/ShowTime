@@ -44,7 +44,7 @@ namespace ShowTime.BusinessLogic.Services
             }
             catch (Exception ex)
             {
-                
+
                 return null;
             }
         }
@@ -68,7 +68,7 @@ namespace ShowTime.BusinessLogic.Services
                 var user = new User
                 {
                     Email = userCreateDto.Email,
-                    Password = hashedPassword, 
+                    Password = hashedPassword,
                     Role = userCreateDto.Role
                 };
 
@@ -139,5 +139,23 @@ namespace ShowTime.BusinessLogic.Services
                 return false;
             }
         }
+
+        public async Task<IList<UserGetDto>> GetAllUsersAsync()
+        {
+            var users = await _userRepo.GetAllAsync();
+
+            if (users == null || !users.Any())
+            {
+                throw new InvalidOperationException("No users found.");
+            }
+
+            return users.Select(user => new UserGetDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = user.Role
+            }).ToList();
+        }
+
     }
 }

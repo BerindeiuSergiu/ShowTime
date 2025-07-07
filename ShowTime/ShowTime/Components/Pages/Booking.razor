@@ -1,0 +1,132 @@
+﻿@page "/booking"
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IBookingService BookingService
+@inject IFestivalService FestivalService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Book a Festival</h3>
+
+<AuthorizeView Roles="User">
+    <Authorized>
+        <div class="booking-section">
+            <h4>Available Festivals</h4>
+            @if (festivals.Count == 0)
+            {
+                <p>No festivals available for booking.</p>
+            }
+            else
+            {
+                <ul class="festival-list">
+                    @foreach (var festival in festivals)
+                    {
+                        <li class="festival-item">
+                            <strong>@festival.Name</strong> - @festival.Location (@festival.StartDate.ToString("MMM dd, yyyy"))
+                            <button class="btn btn-primary btn-sm" @onclick="() => BookFestival(festival.Id)">Book</button>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+        <div class="user-bookings-section mt-4">
+            <h4>Your Bookings</h4>
+            @if (userBookings.Count == 0)
+            {
+                <p>You have no bookings yet.</p>
+            }
+            else
+            {
+                <ul class="booking-list">
+                    @foreach (var booking in userBookings)
+                    {
+                        var festival = festivals.FirstOrDefault(f => f.Id == booking.FestivalId);
+                        <li class="booking-item">
+                            @if (festival != null)
+                            {
+                                <div>
+                                    <span>@festival.Name</span> - <span>@festival.Location</span> (<span>@festival.StartDate.ToString("MMM dd, yyyy")</span>)<span> | Type: @booking.Type</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Festival ID: @booking.FestivalId | Type: @booking.Type</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info mt-2">@message</div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-warning">You must be logged in to book a festival.</div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<FestivalGetDto> festivals = new();
+    private List<BookingGetDto> userBookings = new();
+    private int currentUserId;
+    private string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // getting the festivals
+        festivals = (await FestivalService.GetAllFestivalsAsync()).ToList();
+        // trying to get userID from claims
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type.EndsWith("nameidentifier"));
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
+        {
+            currentUserId = uid;
+        }
+        else
+        {
+            currentUserId = 0;
+        }
+        await LoadUserBookings();
+    }
+
+    private async Task BookFestival(int festivalId)
+    {
+        message = string.Empty;
+        if (currentUserId == 0)
+        {
+            message = "Could not determine your user ID. Please log in again.";
+            return;
+        }
+        var success = await BookingService.CreateBookingAsync(festivalId, currentUserId, "Standard");
+        if (success)
+        {
+            message = "Booking successful!";
+            await LoadUserBookings();
+        }
+        else
+        {
+            message = "Booking failed. Please try again.";
+        }
+    }
+
+    private async Task LoadUserBookings()
+    {
+        userBookings.Clear();
+        if (currentUserId != 0)
+        {
+            var bookings = await BookingService.GetBookingsByUserIdAsync(currentUserId);
+            userBookings = bookings.Select(b => new BookingGetDto
+            {
+                FestivalId = b.FestivalId,
+                UserId = b.UserId,
+                Type = b.Type,
+                Price = b.Price
+            }).ToList();
+        }
+    }
+}

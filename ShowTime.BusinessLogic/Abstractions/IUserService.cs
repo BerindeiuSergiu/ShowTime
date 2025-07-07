@@ -9,5 +9,6 @@ namespace ShowTime.BusinessLogic.Abstractions
         Task<UserCreateDto> CreateUserAsync(UserCreateDto userCreateDto);
         //Task<LoginDto?> GetUserByEmailAsync(string email);
         // adaugare in baza si hash-uire de parole
+        Task<IList<UserGetDto>> GetAllUsersAsync();
     }
 } 

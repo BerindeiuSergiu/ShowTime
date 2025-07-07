@@ -46,6 +46,9 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IGenericRepository<Lineup>, GenericRepository<Lineup>>();
 builder.Services.AddTransient<ILineupService, LineupService>();
 
+builder.Services.AddTransient<IGenericRepository<Booking>, GenericRepository<Booking>>();
+builder.Services.AddTransient<IBookingService, BookingService>();
+
 
 var app = builder.Build();
 
