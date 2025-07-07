@@ -9,6 +9,13 @@
         <AuthorizeView Roles="User">
             <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active" : "")">Festivals</a>
         </AuthorizeView>
+        <AuthorizeView Roles="User">
+            <a href="/lineups" class="nav-link @(IsActive("/lineups") ? "active" : "")">Lineups</a>
+        </AuthorizeView>
+        <AuthorizeView Roles="Administrator">
+            <a href="/artists" class="nav-link @(IsActive("/artists") ? "active admin-link" : "admin-link")">Artists (Admin)</a>
+            <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active admin-link" : "admin-link")">Festivals (Admin)</a>
+        </AuthorizeView>
     </div>
 </nav>
 

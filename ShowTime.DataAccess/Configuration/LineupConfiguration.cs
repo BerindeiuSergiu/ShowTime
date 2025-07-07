@@ -16,7 +16,7 @@ namespace ShowTime.DataAccess.Configuration
             builder.ToTable("Lineups");
 
             // primary key
-            builder.HasKey(l => new { l.FestivalID, l.ArtistID });
+            builder.HasKey(l => new { l.FestivalId, l.ArtistId });
             // properties
             builder.Property(l => l.Stage)
                 .IsRequired()
@@ -26,11 +26,11 @@ namespace ShowTime.DataAccess.Configuration
             // relationships
             builder.HasOne(l => l.Festival)
                 .WithMany(f => f.Lineups)
-                .HasForeignKey(l => l.FestivalID)
+                .HasForeignKey(l => l.FestivalId)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.HasOne(l => l.Artist)
                 .WithMany(a => a.Lineups)
-                .HasForeignKey(l => l.ArtistID)
+                .HasForeignKey(l => l.ArtistId)
                 .OnDelete(DeleteBehavior.Cascade);
 
         }

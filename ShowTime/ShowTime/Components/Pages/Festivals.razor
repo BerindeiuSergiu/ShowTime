@@ -5,6 +5,8 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IFestivalService FestivalService
+@inject ILineupService LineupService
+@inject IArtistsService ArtistService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
@@ -140,6 +142,56 @@
                             <p class="card-text"><strong>Capacity:</strong> @festival.Capacity.ToString("N0")</p>
                         }
                         <p class="card-text"><small class="text-muted">Festival ID: @festival.Id</small></p>
+                        
+                        <div class="festival-actions">
+                            <button class="btn-secondary" @onclick="() => ToggleLineup(festival.Id)">
+                                @if (visibleLineups.Contains(festival.Id))
+                                {
+                                    <span>Hide Lineup</span>
+                                }
+                                else
+                                {
+                                    <span>View Lineup</span>
+                                }
+                            </button>
+                            <AuthorizeView Roles="Administrator">
+                                <Authorized>
+                                    <button class="btn btn-sm btn-warning" @onclick="() => StartEditFestival(festival)">Edit</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteFestivalById(festival.Id)">Delete</button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+
+                        @if (visibleLineups.Contains(festival.Id))
+                        {
+                            <div class="lineup-section">
+                                <h4>Lineup</h4>
+                                @if (festivalLineups.ContainsKey(festival.Id) && festivalLineups[festival.Id].Any())
+                                {
+                                    <ul class="lineup-list">
+                                        @foreach (var lineup in festivalLineups[festival.Id])
+                                        {
+                                            var artist = artists.FirstOrDefault(a => a.Id == lineup.ArtistId);
+                                            <li class="lineup-item">
+                                                @if (artist != null)
+                                                {
+                                                    <span class="artist-name">@artist.Name</span>
+                                                    <span class="artist-genre">(@artist.Genre)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="artist-name">Artist ID @lineup.ArtistId</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="no-lineup">No artists in lineup yet.</p>
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             }
@@ -147,8 +199,67 @@
     }
 </div>
 
+@if (showEditModal && editingFestival != null)
+{
+    <div class="modal" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Festival</h5>
+                    <button type="button" class="btn-close" @onclick="CancelEditFestival"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editName">Name:</label>
+                        <input id="editName" type="text" @bind="editName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocation">Location:</label>
+                        <input id="editLocation" type="text" @bind="editLocation" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editStartDate">Start Date:</label>
+                        <InputDate id="editStartDate" @bind-Value="editStartDate" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editEndDate">End Date:</label>
+                        <InputDate id="editEndDate" @bind-Value="editEndDate" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editSplashArt">Splash Art (Image URL):</label>
+                        <input id="editSplashArt" type="text" @bind="editSplashArt" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editCapacity">Capacity:</label>
+                        <InputNumber id="editCapacity" @bind-Value="editCapacity" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelEditFestival">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveEditFestival">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
 @code {
     private IList<FestivalGetDto> festivals = new List<FestivalGetDto>();
+    private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
+    private Dictionary<int, List<LineupGetDto>> festivalLineups = new();
+    private HashSet<int> visibleLineups = new();
+
+    // Edit modal state
+    private FestivalGetDto? editingFestival;
+    private string editName = string.Empty;
+    private string editLocation = string.Empty;
+    private DateTime editStartDate;
+    private DateTime editEndDate;
+    private string editSplashArt = string.Empty;
+    private int editCapacity;
+    private bool showEditModal = false;
+
     [SupplyParameterFromForm]
     private FestivalCreateDto newFestival { get; set; } = new();
 
@@ -158,7 +269,6 @@
     [SupplyParameterFromForm]
     private FestivalGetDto deleteFestival { get; set; } = new();
 
-    // practic de fiecare data cand pagina se deschide astea trebuie sa apara
     protected override async Task OnInitializedAsync()
     {
         newFestival ??= new FestivalCreateDto();
@@ -166,6 +276,83 @@
         deleteFestival ??= new FestivalGetDto();
 
         festivals = await FestivalService.GetAllFestivalsAsync();
+        artists = await ArtistService.GetAllArtistsAsync();
+    }
+
+    private async Task ToggleLineup(int festivalId)
+    {
+        if (visibleLineups.Contains(festivalId))
+        {
+            visibleLineups.Remove(festivalId);
+        }
+        else
+        {
+            visibleLineups.Add(festivalId);
+            
+            // Load lineup if not already loaded
+            if (!festivalLineups.ContainsKey(festivalId))
+            {
+                var lineup = await LineupService.GetLineupsByFestivalAsync(festivalId);
+                festivalLineups[festivalId] = lineup.ToList();
+            }
+        }
+        
+        StateHasChanged();
+    }
+
+    private void StartEditFestival(FestivalGetDto festival)
+    {
+        editingFestival = festival;
+        editName = festival.Name;
+        editLocation = festival.Location;
+        editStartDate = festival.StartDate;
+        editEndDate = festival.EndDate;
+        editSplashArt = festival.SplashArt;
+        editCapacity = festival.Capacity;
+        showEditModal = true;
+    }
+
+    private void CancelEditFestival()
+    {
+        editingFestival = null;
+        editName = string.Empty;
+        editLocation = string.Empty;
+        editStartDate = DateTime.Now;
+        editEndDate = DateTime.Now;
+        editSplashArt = string.Empty;
+        editCapacity = 0;
+        showEditModal = false;
+    }
+
+    private async Task SaveEditFestival()
+    {
+        if (editingFestival != null)
+        {
+            var updateDto = new FestivalUpdateDto
+            {
+                Id = editingFestival.Id,
+                Name = editName,
+                Location = editLocation,
+                StartDate = editStartDate,
+                EndDate = editEndDate,
+                SplashArt = editSplashArt,
+                Capacity = editCapacity
+            };
+            await FestivalService.UpdateFestivalAsync(updateDto);
+            festivals = await FestivalService.GetAllFestivalsAsync();
+            CancelEditFestival();
+        }
+    }
+
+    private async Task DeleteFestivalById(int festivalId)
+    {
+        await FestivalService.DeleteFestivalAsync(festivalId);
+        festivals = await FestivalService.GetAllFestivalsAsync();
+        if (festivalLineups.ContainsKey(festivalId))
+        {
+            festivalLineups.Remove(festivalId);
+        }
+        visibleLineups.Remove(festivalId);
     }
 
     private async Task AddFestival()
@@ -182,6 +369,13 @@
             await FestivalService.DeleteFestivalAsync(deleteFestival.Id);
             deleteFestival = new FestivalGetDto();
             festivals = await FestivalService.GetAllFestivalsAsync();
+            
+            // Clean up lineup data for deleted festival
+            if (festivalLineups.ContainsKey(deleteFestival.Id))
+            {
+                festivalLineups.Remove(deleteFestival.Id);
+            }
+            visibleLineups.Remove(deleteFestival.Id);
         }
     }
 

@@ -36,7 +36,7 @@ namespace ShowTime.DataAccess.Configuration
             // in mai multe line-up-uri poate fi asociat un artist
             builder.HasMany(a => a.Lineups)
                 .WithOne(l => l.Artist)
-                .HasForeignKey(l => l.ArtistID);
+                .HasForeignKey(l => l.ArtistId);
 
         }
     }

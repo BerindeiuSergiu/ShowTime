@@ -43,6 +43,10 @@ builder.Services.AddTransient<IGenericRepository<User>, GenericRepository<User>>
 builder.Services.AddTransient<IUserService, UserService>();
 
 
+builder.Services.AddTransient<IGenericRepository<Lineup>, GenericRepository<Lineup>>();
+builder.Services.AddTransient<ILineupService, LineupService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,276 @@
+@page "/lineups"
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
+@using ShowTime.BussinessLogic.Dtos
+@inject IFestivalService FestivalService
+@inject IArtistsService ArtistService
+@inject ILineupService LineupService
+@using Microsoft.AspNetCore.Components.Authorization
+@rendermode InteractiveServer
+
+<h1>Manage Festival Lineups</h1>
+
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        <div class="lineup-form">
+            <div class="form-group">
+                <label for="festivalSelect">Select Festival:</label>
+                <select id="festivalSelect" @bind="selectedFestivalId" class="form-control">
+                    <option value="">-- Select Festival --</option>
+                    @foreach (var festival in festivals)
+                    {
+                        <option value="@festival.Id">@festival.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="artistSelect">Select Artist:</label>
+                <select id="artistSelect" @bind="selectedArtistId" class="form-control">
+                    <option value="">-- Select Artist --</option>
+                    @foreach (var artist in artists)
+                    {
+                        <option value="@artist.Id">@artist.Name (@artist.Genre)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="stageInput">Stage:</label>
+                <input id="stageInput" type="text" @bind="stage" class="form-control" placeholder="Enter stage name" />
+            </div>
+
+            <div class="form-group">
+                <label for="startTimeInput">Start Time:</label>
+                <input id="startTimeInput" type="datetime-local" @bind="startTime" class="form-control" />
+            </div>
+
+            <button class="btn btn-primary" @onclick="AddLineup" disabled="@(selectedFestivalId == null || selectedArtistId == null || string.IsNullOrEmpty(stage))">
+                Add to Lineup
+            </button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+
+        @if (selectedFestivalId != null)
+        {
+            <h3>Current Lineup for Selected Festival</h3>
+            @if (currentLineup.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Artist</th>
+                                <th>Genre</th>
+                                <th>Stage</th>
+                                <th>Start Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lineup in currentLineup.OrderBy(l => l.StartTime))
+                            {
+                                var artist = artists.FirstOrDefault(a => a.Id == lineup.ArtistId);
+                                <tr>
+                                    <td>@(artist != null ? artist.Name : $"Artist ID {lineup.ArtistId}")</td>
+                                    <td>@(artist != null ? artist.Genre : "Unknown")</td>
+                                    <td>@lineup.Stage</td>
+                                    <td>@lineup.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" @onclick="() => EditLineup(lineup)">Edit</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveLineup(lineup.FestivalId, lineup.ArtistId)">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p>No artists in lineup yet.</p>
+            }
+        }
+
+        @if (editingLineup != null)
+        {
+            <div class="modal" style="display: block; background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Lineup</h5>
+                            <button type="button" class="btn-close" @onclick="CancelEdit"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Artist:</label>
+                                <p>@(artists.FirstOrDefault(a => a.Id == editingLineup.ArtistId)?.Name ?? "Unknown")</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="editStage">Stage:</label>
+                                <input id="editStage" type="text" @bind="editStage" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editStartTime">Start Time:</label>
+                                <input id="editStartTime" type="datetime-local" @bind="editStartTime" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <button type="button" class="btn btn-primary" @onclick="SaveEdit">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-warning">You must be an administrator to view this page.</div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private IList<FestivalGetDto> festivals = new List<FestivalGetDto>();
+    private IList<ArtistGetDto> artists = new List<ArtistGetDto>();
+    private int? selectedFestivalId;
+    private int? selectedArtistId;
+    private string stage = string.Empty;
+    private DateTime startTime = DateTime.Now;
+    private string message = string.Empty;
+    private List<LineupGetDto> currentLineup = new();
+    
+    // Edit functionality
+    private LineupGetDto? editingLineup;
+    private string editStage = string.Empty;
+    private DateTime editStartTime;
+
+    protected override async Task OnInitializedAsync()
+    {
+        festivals = await FestivalService.GetAllFestivalsAsync();
+        artists = await ArtistService.GetAllArtistsAsync();
+
+        // Print all festivals to the browser console
+        foreach (var festival in festivals)
+        {
+            Console.WriteLine($"Festival: ID={festival.Id}, Name={festival.Name}");
+        }
+    }
+
+    private async Task AddLineup()
+    {
+        if (selectedFestivalId.HasValue && selectedArtistId.HasValue && !string.IsNullOrEmpty(stage))
+        {
+            try
+            {
+                await LineupService.AddLineupAsync(new LineupCreateDto
+                {
+                    FestivalId = selectedFestivalId.Value,
+                    ArtistId = selectedArtistId.Value,
+                    Stage = stage,
+                    StartTime = startTime
+                });
+                
+                var artistName = artists.FirstOrDefault(a => a.Id == selectedArtistId.Value)?.Name ?? "Unknown";
+                message = $"Added {artistName} to festival lineup on {stage} stage at {startTime:yyyy-MM-dd HH:mm}.";
+                
+                // Reset form
+                selectedArtistId = null;
+                stage = string.Empty;
+                startTime = DateTime.Now;
+                
+                await LoadCurrentLineup();
+            }
+            catch (InvalidOperationException ex)
+            {
+                message = $"Error: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                message = $"An error occurred: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task RemoveLineup(int festivalId, int artistId)
+    {
+        try
+        {
+            await LineupService.RemoveLineupAsync(festivalId, artistId);
+            var artistName = artists.FirstOrDefault(a => a.Id == artistId)?.Name ?? "Unknown";
+            message = $"Removed {artistName} from festival lineup.";
+            await LoadCurrentLineup();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error removing lineup: {ex.Message}";
+        }
+    }
+
+    private void EditLineup(LineupGetDto lineup)
+    {
+        editingLineup = lineup;
+        editStage = lineup.Stage;
+        editStartTime = lineup.StartTime;
+    }
+
+    private void CancelEdit()
+    {
+        editingLineup = null;
+        editStage = string.Empty;
+        editStartTime = DateTime.Now;
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editingLineup != null)
+        {
+            try
+            {
+                await LineupService.UpdateLineupAsync(new LineupUpdateDto
+                {
+                    FestivalId = editingLineup.FestivalId,
+                    ArtistId = editingLineup.ArtistId,
+                    Stage = editStage,
+                    StartTime = editStartTime
+                });
+                
+                var artistName = artists.FirstOrDefault(a => a.Id == editingLineup.ArtistId)?.Name ?? "Unknown";
+                message = $"Updated {artistName}'s lineup details.";
+                
+                CancelEdit();
+                await LoadCurrentLineup();
+            }
+            catch (Exception ex)
+            {
+                message = $"Error updating lineup: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task LoadCurrentLineup()
+    {
+        if (selectedFestivalId.HasValue)
+        {
+            currentLineup = (await LineupService.GetLineupsByFestivalAsync(selectedFestivalId.Value)).ToList();
+        }
+        else
+        {
+            currentLineup.Clear();
+        }
+        StateHasChanged();
+    }
+
+    private int? _lastFestivalId;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (selectedFestivalId != _lastFestivalId)
+        {
+            _lastFestivalId = selectedFestivalId;
+            await LoadCurrentLineup();
+        }
+    }
+}

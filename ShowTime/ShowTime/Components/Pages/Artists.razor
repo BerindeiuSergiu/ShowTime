@@ -145,6 +145,14 @@
                         <div class="artist-details">
                             <h3 class="artist-name">@artist.Name</h3>
                             <p class="artist-genre">@artist.Genre</p>
+                            <div class="artist-actions">
+                                <AuthorizeView Roles="Administrator">
+                                    <Authorized>
+                                        <button class="btn btn-sm btn-warning" @onclick="() => StartEditArtist(artist)">Edit</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteArtistById(artist.Id)">Delete</button>
+                                    </Authorized>
+                                </AuthorizeView>
+                            </div>
                         </div>
                     </div>
                 }
@@ -152,6 +160,37 @@
         }
     </div>
 </div>
+@if (showEditModal && editingArtist != null)
+{
+    <div class="modal" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Artist</h5>
+                    <button type="button" class="btn-close" @onclick="CancelEditArtist"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editName">Name:</label>
+                        <input id="editName" type="text" @bind="editName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editGenre">Genre:</label>
+                        <input id="editGenre" type="text" @bind="editGenre" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="editImage">Image URL:</label>
+                        <input id="editImage" type="text" @bind="editImage" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelEditArtist">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveEditArtist">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @code {
     private string? SelectedGenre { get; set; }
 
@@ -172,6 +211,13 @@
     private List<string> availableGenres = new(); // o lista unica unde imi salvez genre-urile disponibile
 
     private string searchTerm { get; set; } = string.Empty; // search term for artist name
+
+    // Edit modal state
+    private ArtistGetDto? editingArtist;
+    private string editName = string.Empty;
+    private string editGenre = string.Empty;
+    private string editImage = string.Empty;
+    private bool showEditModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -261,6 +307,46 @@
 
     }
 
+    private void StartEditArtist(ArtistGetDto artist)
+    {
+        editingArtist = artist;
+        editName = artist.Name;
+        editGenre = artist.Genre;
+        editImage = artist.Image;
+        showEditModal = true;
+    }
+
+    private void CancelEditArtist()
+    {
+        editingArtist = null;
+        editName = string.Empty;
+        editGenre = string.Empty;
+        editImage = string.Empty;
+        showEditModal = false;
+    }
+
+    private async Task SaveEditArtist()
+    {
+        if (editingArtist != null)
+        {
+            var updateDto = new ArtistUpdateDto
+            {
+                Id = editingArtist.Id,
+                Name = editName,
+                Genre = editGenre,
+                Image = editImage
+            };
+            await ArtistService.UpdateArtistAsync(updateDto);
+            await GetArtists();
+            CancelEditArtist();
+        }
+    }
+
+    private async Task DeleteArtistById(int artistId)
+    {
+        await ArtistService.DeleteArtistAsync(artistId);
+        await GetArtists();
+    }
 
 
     private RenderFragment ShowChoose(string? value) => (__builder) =>

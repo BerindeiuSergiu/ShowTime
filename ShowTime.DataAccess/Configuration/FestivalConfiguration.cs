@@ -42,7 +42,7 @@ namespace ShowTime.DataAccess.Configuration
             // cu line-up-uri mai multe festivale pot apartine unui singur lineup
             builder.HasMany(f => f.Lineups)
                 .WithOne(l => l.Festival)
-                .HasForeignKey(l => l.FestivalID);
+                .HasForeignKey(l => l.FestivalId);
             // un festival poate apartine la mai multe booking-uri
             builder.HasMany(f => f.Bookings)
                 .WithOne(b => b.Festival)

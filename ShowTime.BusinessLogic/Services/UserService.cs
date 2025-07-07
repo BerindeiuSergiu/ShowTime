@@ -31,7 +31,7 @@ namespace ShowTime.BusinessLogic.Services
                     return null;
                 }
 
-                // Verify the password hash
+                // verif hash password
                 if (!VerifyPassword(login.Password, user.Password))
                 {
                     return null;
@@ -44,7 +44,7 @@ namespace ShowTime.BusinessLogic.Services
             }
             catch (Exception ex)
             {
-                // Log the exception (not implemented here)
+                
                 return null;
             }
         }
