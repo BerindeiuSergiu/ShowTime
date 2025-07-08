@@ -32,6 +32,8 @@ namespace ShowTime.DataAccess
         public DbSet<User> Users { get; set; }
         public DbSet<Booking> Bookings { get; set; }
 
+        public DbSet<Booking> Ticket { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShowTimeContext).Assembly);
@@ -42,6 +44,7 @@ namespace ShowTime.DataAccess
             new LineupConfiguration().Configure(modelBuilder.Entity<Lineup>());
             new UserConfiguration().Configure(modelBuilder.Entity<User>());
             new BookingConfiguration().Configure(modelBuilder.Entity<Booking>());
+            new TicketConfiguration().Configure(modelBuilder.Entity<Ticket>());
         }
     }
 }

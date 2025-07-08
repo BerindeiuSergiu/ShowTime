@@ -10,29 +10,27 @@ namespace ShowTime.DataAccess.Configuration
         {
             builder.ToTable("Bookings");
 
-            // primary key
+            // primary key  
             builder.HasKey(b => new { b.FestivalId, b.UserId });
 
-            // properties
-            builder.Property(b => b.Type)
-                .IsRequired()
-                .HasMaxLength(50);
+            // relationships  
 
-            builder.Property(b => b.Price)
-                .IsRequired();
-
-            // relationships
-
-            // un festival poate avea mai multe booking-uri
+            // A festival can have multiple bookings  
             builder.HasOne(b => b.Festival)
                 .WithMany(f => f.Bookings)
                 .HasForeignKey(b => b.FestivalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // un user poate avea mai multe booking-uri
+            // A user can have multiple bookings  
             builder.HasOne(b => b.User)
                 .WithMany(u => u.Bookings)
                 .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+ 
+            builder.HasOne(b => b.Ticket)
+                .WithOne(t => t.Booking)
+                .HasForeignKey<Booking>(b => b.TicketId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

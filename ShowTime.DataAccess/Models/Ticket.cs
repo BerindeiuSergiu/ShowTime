@@ -12,5 +12,7 @@ namespace ShowTime.DataAccess.Models
         public int Id { get; set; }
         public int Price { get; set; }
         public string TicketType { get; set; } = string.Empty;
+
+        public Booking Booking { get; set; } = null!;
     }
 }

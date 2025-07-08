@@ -237,9 +237,7 @@
                 userBookings = bookings.Select(b => new BookingGetDto
                 {
                     FestivalId = b.FestivalId,
-                    UserId = b.UserId,
-                    Type = b.Type,
-                    Price = b.Price
+                    UserId = b.UserId
                 }).ToList();
                 Console.WriteLine($"Loaded {userBookings.Count} bookings for user");
             }

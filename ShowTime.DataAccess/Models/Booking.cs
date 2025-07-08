@@ -10,8 +10,7 @@ namespace ShowTime.DataAccess.Models
     {
         public int FestivalId { get; set; }
         public int UserId { get; set; }
-        public string Type { get; set; } = string.Empty;
-        public int Price { get; set; }
+        public int TicketId { get; set; }
 
         //pt a realiza legatura
         /*
@@ -21,6 +20,8 @@ namespace ShowTime.DataAccess.Models
          */
         public Festival Festival { get; set; } = null; 
         public User User { get; set; } = null;
+
+        public Ticket Ticket { get; set; } = null;
 
     }
 }

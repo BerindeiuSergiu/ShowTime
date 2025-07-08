@@ -38,16 +38,17 @@ builder.Services.AddTransient<IArtistsService, ArtistService>();
 builder.Services.AddTransient<IGenericRepository<Festival>, GenericRepository<Festival>>();
 builder.Services.AddTransient<IFestivalService, FestivalService>();
 
-
 builder.Services.AddTransient<IGenericRepository<User>, GenericRepository<User>>();
 builder.Services.AddTransient<IUserService, UserService>();
-
 
 builder.Services.AddTransient<IGenericRepository<Lineup>, GenericRepository<Lineup>>();
 builder.Services.AddTransient<ILineupService, LineupService>();
 
 builder.Services.AddTransient<IGenericRepository<Booking>, GenericRepository<Booking>>();
 builder.Services.AddTransient<IBookingService, BookingService>();
+
+builder.Services.AddTransient<IGenericRepository<Ticket>, GenericRepository<Ticket>>();
+builder.Services.AddTransient<ITicketService, TicketService>();
 
 
 var app = builder.Build();

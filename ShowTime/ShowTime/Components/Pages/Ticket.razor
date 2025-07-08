@@ -1,0 +1,175 @@
+@page "/tickets"
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ITicketService TicketService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="tickets-container">
+    <div class="page-header">
+        <h1 class="page-title">Ticket Management</h1>
+        <p class="page-subtitle">Manage all available tickets</p>
+    </div>
+    <div class="forms-section">
+        <!-- Add Ticket Form -->
+        <div class="form-card add-form">
+            <div class="form-header">
+                <h2 class="form-title">Add New Ticket</h2>
+                <div class="form-icon add-icon">+</div>
+            </div>
+            <EditForm Model="newTicket" OnValidSubmit="AddTicket" FormName="addTicket" class="ticket-form">
+                <div class="form-group">
+                    <label class="form-label">Ticket Type</label>
+                    <InputText @bind-Value="newTicket!.TicketType" class="form-input"></InputText>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price</label>
+                    <InputNumber @bind-Value="newTicket!.Price" class="form-input"></InputNumber>
+                </div>
+                <button type="submit" class="form-button add-button">Add Ticket</button>
+            </EditForm>
+        </div>
+        <!-- Update Ticket Form -->
+        <div class="form-card update-form">
+            <div class="form-header">
+                <h2 class="form-title">Update Ticket</h2>
+                <div class="form-icon update-icon">✏️</div>
+            </div>
+            <EditForm Model="updateTicket" OnValidSubmit="UpdateTicket" class="ticket-form">
+                <div class="form-group">
+                    <label class="form-label">Ticket ID</label>
+                    <InputNumber @bind-Value="updateTicket!.Id" class="form-input"></InputNumber>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ticket Type</label>
+                    <InputText @bind-Value="updateTicket!.TicketType" class="form-input"></InputText>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price</label>
+                    <InputNumber @bind-Value="updateTicket!.Price" class="form-input"></InputNumber>
+                </div>
+                <button type="submit" class="form-button update-button">Update Ticket</button>
+            </EditForm>
+        </div>
+        <!-- Delete Ticket Form -->
+        <div class="form-card delete-form">
+            <div class="form-header">
+                <h2 class="form-title">Delete Ticket</h2>
+                <div class="form-icon delete-icon">🗑️</div>
+            </div>
+            <EditForm Model="deleteTicket" OnValidSubmit="DeleteTicket" class="ticket-form">
+                <div class="form-group">
+                    <label class="form-label">Ticket ID</label>
+                    <InputNumber @bind-Value="deleteTicketId" class="form-input"></InputNumber>
+                </div>
+                <button type="submit" class="form-button delete-button">Delete Ticket</button>
+            </EditForm>
+        </div>
+    </div>
+    <div class="admin-notice">
+        <div class="notice-icon">🔒</div>
+        <h3>Admin Access Required</h3>
+        <p>You need administrator privileges to manage tickets.</p>
+    </div>
+
+    <!-- Tickets Display Section -->
+    <div class="tickets-display-section">
+        <div class="section-header">
+            <h2 class="section-title">Tickets Collection</h2>
+        </div>
+        @if (tickets.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">🎟️</div>
+                <h3 class="empty-title">No Tickets Yet</h3>
+                <p class="empty-message">Start by adding your first ticket above!</p>
+            </div>
+        }
+        else
+        {
+            <div class="tickets-grid">
+                @foreach (var ticket in tickets)
+                {
+                    <div class="ticket-card">
+                        <div class="ticket-details">
+                            <span class="ticket-id">ID: @ticket.Id</span>
+                            <span class="ticket-type">Type: @ticket.TicketType</span>
+                            <span class="ticket-price">Price: @ticket.Price</span>
+                        </div>
+                        <AuthorizeView Roles="Administrator">
+                            <Authorized>
+                                <button class="btn btn-sm btn-warning" @onclick="() => StartEditTicket(ticket)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteTicketById(ticket.Id)">Delete</button>
+                            </Authorized>
+                        </AuthorizeView>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private IList<TicketGetDto> tickets = new List<TicketGetDto>();
+    [SupplyParameterFromForm]
+    private TicketCreateDto? newTicket { get; set; } = new ();
+    [SupplyParameterFromForm]
+    private TicketUpdateDto? updateTicket{ get; set; } = new ();
+    [SupplyParameterFromForm]
+	private TicketGetDto? deleteTicket { get; set; } = new();
+
+    private int deleteTicketId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTickets();
+    }
+
+    private async Task LoadTickets()
+    {
+        tickets = await TicketService.GetAllTicketsAsync();
+    }
+
+    private async Task AddTicket()
+    {
+        if (newTicket != null)
+        {
+            await TicketService.AddTicketAsync(newTicket);
+            newTicket = new TicketCreateDto();
+            await LoadTickets();
+        }
+    }
+
+    private async Task UpdateTicket()
+    {
+        if (updateTicket != null)
+        {
+            await TicketService.UpdateTicketAsync(updateTicket);
+            await LoadTickets();
+            updateTicket = new TicketUpdateDto();
+        }
+    }
+
+    private async Task DeleteTicket()
+    {
+        await TicketService.DeleteTicketAsync(deleteTicketId);
+        await LoadTickets();
+        deleteTicketId = 0;
+    }
+
+    private void StartEditTicket(TicketGetDto ticket)
+    {
+        updateTicket = new TicketUpdateDto
+        {
+            Id = ticket.Id,
+            Price = ticket.Price,
+            TicketType = ticket.TicketType
+        };
+    }
+
+    private void DeleteTicketById(int id)
+    {
+        deleteTicketId = id;
+    }
+} 

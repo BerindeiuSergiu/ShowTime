@@ -26,9 +26,7 @@ namespace ShowTime.BusinessLogic.Services
                 var booking = new Booking
                 {
                     FestivalId = festivalId,
-                    UserId = userId,
-                    Type = type,
-                    Price = 0 // Assuming price is set to 0 initially, you can modify this as needed  
+                    UserId = userId, 
                 };
 
                 var createdBooking = await _bookingRepository.AddAsync(booking);
