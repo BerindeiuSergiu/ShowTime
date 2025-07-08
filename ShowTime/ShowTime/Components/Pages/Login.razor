@@ -104,8 +104,9 @@
             new Claim(ClaimTypes.Email, loginInfo.Email),
             new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), response.Role) ?? nameof(Role.User)),
             // DACA NU COMENTEZ ASTA CRAPAA
-            //new Claim(ClaimTypes.NameIdentifier, userId)
+            new Claim(ClaimTypes.NameIdentifier, userId)
         };
+            //Console.WriteLine($"User ID DEBUG: {userId}"); // For debugging purposes
 
             var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimsPrincipal = new ClaimsPrincipal(claimIdentity);

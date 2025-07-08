@@ -40,16 +40,15 @@ namespace ShowTime.BusinessLogic.Services
             }
         }
 
-        public Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
+        public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
         {
             try
             {
-                var bookings = _bookingRepository.GetAllAsync().Result
-                    .Where(b => b.UserId == userId);
-
-                return Task.FromResult(bookings);
+                var allBookings = await _bookingRepository.GetAllAsync();
+                var userBookings = allBookings.Where(b => b.UserId == userId);
+                return userBookings;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new Exception("An error occurred while retrieving bookings for the user.", e);
             }

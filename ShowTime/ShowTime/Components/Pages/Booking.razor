@@ -10,8 +10,54 @@
 
 <h3>Book a Festival</h3>
 
+<!-- Debug Information Section -->
+<div class="debug-info" style="background-color: #f8f9fa; padding: 10px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+    <h5>Debug Information</h5>
+    <p><strong>Is Authenticated:</strong> @isAuthenticated</p>
+    <p><strong>User Identity Name:</strong> @(userIdentityName ?? "NULL")</p>
+    <p><strong>User Roles:</strong> @string.Join(", ", userRoles)</p>
+    <p><strong>Current User ID:</strong> @currentUserId</p>
+    <p><strong>Total Claims:</strong> @totalClaims</p>
+    <p><strong>All Claims:</strong></p>
+    <ul>
+        @foreach (var claim in allClaims)
+        {
+            <li><strong>@claim.Key:</strong> @claim.Value</li>
+        }
+    </ul>
+</div>
+
+<!-- Test different approaches -->
+<div style="border: 2px solid #007bff; padding: 15px; margin: 10px 0;">
+    <h5>AuthorizeView with Roles="User" (same as your artists page)</h5>
+    <AuthorizeView Roles="User">
+        <Authorized Context="authContext">
+            <div class="alert alert-success">✅ Roles="User" - AUTHORIZED (using Context like artists page)</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-warning">❌ Roles="User" - NOT AUTHORIZED</div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<div style="border: 2px solid #ffc107; padding: 15px; margin: 10px 0;">
+    <h5>AuthorizeView with just authentication check</h5>
+    <AuthorizeView>
+        <Authorized>
+            <div class="alert alert-success">✅ Basic Auth - AUTHORIZED</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-warning">❌ Basic Auth - NOT AUTHORIZED</div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<!-- Your main content - using the same pattern as your artists page -->
 <AuthorizeView Roles="User">
-    <Authorized>
+    <Authorized Context="authContext">
+        <div class="alert alert-success">
+            <strong>AUTHORIZE VIEW - AUTHORIZED:</strong> You are in the authorized section!
+        </div>
         <div class="booking-section">
             <h4>Available Festivals</h4>
             @if (festivals.Count == 0)
@@ -65,7 +111,9 @@
         }
     </Authorized>
     <NotAuthorized>
-        <div class="alert alert-warning">You must be logged in to book a festival.</div>
+        <div class="alert alert-warning">
+            <strong>NOT AUTHORIZED:</strong> You must be logged in to book a festival.
+        </div>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -74,59 +122,135 @@
     private List<BookingGetDto> userBookings = new();
     private int currentUserId;
     private string message = string.Empty;
+    
+    // Debug variables
+    private bool isAuthenticated = false;
+    private string? userIdentityName;
+    private List<string> userRoles = new();
+    private int totalClaims = 0;
+    private Dictionary<string, string> allClaims = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // getting the festivals
-        festivals = (await FestivalService.GetAllFestivalsAsync()).ToList();
-        // trying to get userID from claims
+        Console.WriteLine("=== BOOKING PAGE DEBUG START ===");
+        
+        // Debug authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        
+        isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        userIdentityName = user.Identity?.Name;
+        userRoles = user.Claims.Where(c => c.Type == "role" || c.Type.EndsWith("role")).Select(c => c.Value).ToList();
+        totalClaims = user.Claims.Count();
+        
+        Console.WriteLine($"Is Authenticated: {isAuthenticated}");
+        Console.WriteLine($"User Identity Name: {userIdentityName}");
+        Console.WriteLine($"User Roles: {string.Join(", ", userRoles)}");
+        Console.WriteLine($"Total Claims: {totalClaims}");
+        
+        // Log all claims
+        foreach (var claim in user.Claims)
+        {
+            var claimKey = $"{claim.Type}";
+            var claimValue = claim.Value;
+            allClaims[claimKey] = claimValue;
+            Console.WriteLine($"Claim - Type: {claim.Type}, Value: {claim.Value}");
+        }
+        
+        // getting the festivals
+        try
+        {
+            festivals = (await FestivalService.GetAllFestivalsAsync()).ToList();
+            Console.WriteLine($"Loaded {festivals.Count} festivals");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading festivals: {ex.Message}");
+        }
+        
+        // trying to get userID from claims
         var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type.EndsWith("nameidentifier"));
         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
         {
             currentUserId = uid;
+            Console.WriteLine($"Found User ID: {currentUserId} from claim type: {userIdClaim.Type}");
         }
         else
         {
             currentUserId = 0;
+            Console.WriteLine("Could not find or parse User ID from claims");
         }
+        
+        // Check if user is in User role specifically
+        var hasUserRole = user.IsInRole("User");
+        var hasUserRoleAlt = user.Claims.Any(c => c.Type.EndsWith("role") && c.Value == "User");
+        Console.WriteLine($"IsInRole('User'): {hasUserRole}");
+        Console.WriteLine($"Has User role in claims: {hasUserRoleAlt}");
+        
         await LoadUserBookings();
+        
+        Console.WriteLine("=== BOOKING PAGE DEBUG END ===");
     }
 
     private async Task BookFestival(int festivalId)
     {
+        Console.WriteLine($"=== BOOKING FESTIVAL {festivalId} ===");
         message = string.Empty;
         if (currentUserId == 0)
         {
             message = "Could not determine your user ID. Please log in again.";
+            Console.WriteLine("Booking failed: No user ID");
             return;
         }
-        var success = await BookingService.CreateBookingAsync(festivalId, currentUserId, "Standard");
-        if (success)
+        
+        try
         {
-            message = "Booking successful!";
-            await LoadUserBookings();
+            var success = await BookingService.CreateBookingAsync(festivalId, currentUserId, "Standard");
+            Console.WriteLine($"Booking result: {success}");
+            if (success)
+            {
+                message = "Booking successful!";
+                await LoadUserBookings();
+            }
+            else
+            {
+                message = "Booking failed. Please try again.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            message = "Booking failed. Please try again.";
+            Console.WriteLine($"Error creating booking: {ex.Message}");
+            message = $"Error: {ex.Message}";
         }
     }
 
     private async Task LoadUserBookings()
     {
+        Console.WriteLine($"=== LOADING USER BOOKINGS FOR USER {currentUserId} ===");
         userBookings.Clear();
         if (currentUserId != 0)
         {
-            var bookings = await BookingService.GetBookingsByUserIdAsync(currentUserId);
-            userBookings = bookings.Select(b => new BookingGetDto
+            try
             {
-                FestivalId = b.FestivalId,
-                UserId = b.UserId,
-                Type = b.Type,
-                Price = b.Price
-            }).ToList();
+                // de aici incolo e problema
+                var bookings = await BookingService.GetBookingsByUserIdAsync(currentUserId);
+                userBookings = bookings.Select(b => new BookingGetDto
+                {
+                    FestivalId = b.FestivalId,
+                    UserId = b.UserId,
+                    Type = b.Type,
+                    Price = b.Price
+                }).ToList();
+                Console.WriteLine($"Loaded {userBookings.Count} bookings for user");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading user bookings: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Skipping booking load - no user ID");
         }
     }
 }
