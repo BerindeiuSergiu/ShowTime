@@ -3,32 +3,72 @@
 <PageTitle>ShowTime - Your Festival Access Method</PageTitle>
 
 <div class="home-container">
-    <div class="home-hero">
-        <h1 class="hero-title">ShowTime</h1>
-        <p class="hero-subtitle">Your method to access festivals easier</p>
-        <p class="hero-description">
-            Discover the easiest way to manage and access your favorite festivals and artists. 
-            ShowTime brings you a seamless experience for all your entertainment needs.
-        </p>
-    </div>
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">ShowTime</h1>
+            <p class="hero-subtitle">Your Gateway to Festival Experiences</p>
+            <p class="hero-description">
+                Discover and book your favorite festivals with ease. 
+                Experience seamless access to world-class entertainment.
+            </p>
+            <div class="hero-cta">
+                <AuthorizeView>
+                    <Authorized>
+                        <a href="/festivals" class="primary-button">Explore Festivals</a>
+                        <a href="/artists" class="secondary-button">View Artists</a>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login" class="primary-button">Get Started</a>
+                        <a href="/register" class="secondary-button">Sign Up</a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </section>
 
-    <div class="features-section">
-        <div class="feature-card">
-            <div class="feature-icon">🎵</div>
-            <h3 class="feature-title">Artist Management</h3>
-            <p class="feature-description">Easily manage your favorite artists, discover new ones, and keep track of their performances across different festivals.</p>
+    <section class="features-section">
+        <h2 class="section-title">Why Choose ShowTime</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <img src="/images/music-note.svg" alt="Artist Management" class="feature-img" />
+                </div>
+                <h3 class="feature-title">Artist Management</h3>
+                <p class="feature-description">Track your favorite artists and never miss their performances at upcoming festivals.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <img src="/images/festival-tent.svg" alt="Festival Access" class="feature-img" />
+                </div>
+                <h3 class="feature-title">Festival Access</h3>
+                <p class="feature-description">Get comprehensive details about festivals, lineups, and schedules all in one place.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <img src="/images/ticket.svg" alt="Easy Booking" class="feature-img" />
+                </div>
+                <h3 class="feature-title">Easy Booking</h3>
+                <p class="feature-description">Book tickets instantly with our streamlined process and real-time availability updates.</p>
+            </div>
         </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">🎪</div>
-            <h3 class="feature-title">Festival Access</h3>
-            <p class="feature-description">Access comprehensive information about festivals, lineups, schedules, and everything you need to plan your perfect festival experience.</p>
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">100+</span>
+                <span class="stat-label">Festivals</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">1000+</span>
+                <span class="stat-label">Artists</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">Happy Users</span>
+            </div>
         </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">🎫</div>
-            <h3 class="feature-title">Easy Booking</h3>
-            <p class="feature-description">Streamlined booking process for festival tickets and artist performances with real-time availability and instant confirmations.</p>
-        </div>
-    </div>
+    </section>
 </div>

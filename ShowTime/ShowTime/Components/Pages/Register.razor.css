@@ -1,29 +1,77 @@
-﻿.register-container {
+﻿/* Register page - Impressive modern styling */
+
+.register-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    background-color: #f8fafc;
+    position: relative;
+}
+
+.register-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
 }
 
 .register-card {
-    background: #fff;
-    padding: 2.5rem 2rem;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 1;
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .register-title {
-    text-align: center;
-    font-size: 2rem;
+    font-size: 1.875rem;
     font-weight: 700;
-    color: #2d3748;
-    margin-bottom: 1rem;
+    color: #1e40af;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.register-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.register-form-icon {
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e0e7ff;
+    color: #4f46e5;
 }
 
 .form-group {
@@ -32,52 +80,110 @@
     gap: 0.5rem;
 }
 
+.form-label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .form-control {
     padding: 0.75rem 1rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    background: #f9fafb;
-    transition: border 0.2s;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    color: #1f2937;
 }
 
 .form-control:focus {
-    border-color: #6366f1;
+    border-color: #4f46e5;
     outline: none;
-    background: #fff;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .register-button {
     width: 100%;
     padding: 0.75rem;
-    background: #6366f1;
+    background: #4f46e5;
     color: #fff;
     border: none;
-    border-radius: 0.5rem;
-    font-size: 1.1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 0.5rem;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.register-button:hover {
-    background: #4f46e5;
+.register-button:hover:not(:disabled) {
+    background: #4338ca;
+    transform: translateY(-1px);
+}
+
+.register-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .error-message {
-    color: #e53e3e;
-    background: #fff5f5;
-    border: 1px solid #feb2b2;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: shake 0.5s ease-in-out;
 }
 
 .password-mismatch {
-    color: #e53e3e;
-    font-size: 0.875rem;
+    color: #dc2626;
+    font-size: 0.75rem;
     margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+/* Additional styles */
+.text-center {
+    text-align: center;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.text-primary {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.text-primary:hover {
+    color: #4338ca;
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .register-card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .register-title {
+        font-size: 1.5rem;
+    }
 }
