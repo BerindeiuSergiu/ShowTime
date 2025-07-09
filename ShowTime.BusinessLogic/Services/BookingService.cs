@@ -19,14 +19,15 @@ namespace ShowTime.BusinessLogic.Services
             _bookingRepository = bookingRepository ?? throw new ArgumentNullException(nameof(bookingRepository));
         }
 
-        public async Task<bool> CreateBookingAsync(int festivalId, int userId, string type)
+        public async Task<bool> CreateBookingAsync(int festivalId, int userId, int ticketId)
         {
             try
             {
                 var booking = new Booking
                 {
                     FestivalId = festivalId,
-                    UserId = userId, 
+                    UserId = userId,
+                    TicketId = ticketId
                 };
 
                 var createdBooking = await _bookingRepository.AddAsync(booking);

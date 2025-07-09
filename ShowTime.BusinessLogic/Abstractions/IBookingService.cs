@@ -10,7 +10,7 @@ namespace ShowTime.BusinessLogic.Abstractions
     public interface IBookingService
     {
 
-        Task<bool> CreateBookingAsync(int festivalId, int userId, string type);
+        Task<bool> CreateBookingAsync(int festivalId, int userId, int ticketId);
         Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId);
     }
 }

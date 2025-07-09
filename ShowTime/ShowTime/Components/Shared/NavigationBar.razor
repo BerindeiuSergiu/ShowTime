@@ -2,6 +2,14 @@
 
 <nav class="shared-navigation">
     <div class="nav-container">
+        <AuthorizeView>
+            <Authorized>
+                <a href="/logout" class="btn btn-outline-danger">Logout</a>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/login" class="btn btn-primary">Login</a>
+            </NotAuthorized>
+        </AuthorizeView>
         <a href="/" class="nav-link @(IsActive("/") ? "active" : "")">Home</a>
         <AuthorizeView Roles="User">
             <a href="/artists" class="nav-link @(IsActive("/artists") ? "active" : "")">Artists</a>
@@ -18,6 +26,7 @@
         <AuthorizeView Roles="Administrator">
             <a href="/artists" class="nav-link @(IsActive("/artists") ? "active admin-link" : "admin-link")">Artists (Admin)</a>
             <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active admin-link" : "admin-link")">Festivals (Admin)</a>
+            <a href="/tickets" class="nav-link @(IsActive("/tickets") ? "active admin-link" : "admin-link")">Tickets (Admin)</a>
         </AuthorizeView>
     </div>
 </nav>

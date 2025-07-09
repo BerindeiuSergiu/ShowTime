@@ -92,4 +92,35 @@
 .notice-icon {
     font-size: 2rem;
     margin-bottom: 0.5rem;
-} 
+}
+
+.ticket-details.editing {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .edit-field label {
+        font-weight: bold;
+        min-width: 60px;
+    }
+
+.edit-input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.ticket-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}

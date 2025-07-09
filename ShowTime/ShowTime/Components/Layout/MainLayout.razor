@@ -5,31 +5,10 @@
 
 <div class="page">
     <main>
-        <div class="top-row px-4">
-            <div class="top-row-left">
-                <a href="https://learn.microsoft.com/aspnet-core/" target="_blank">About</a>
-            </div>
-            <div class="top-row-right">
-                <AuthorizeView>
-                    <Authorized>
-                        <span class="welcome-text">Welcome, @context.User.Identity?.Name!</span>
-                        <a href="/logout" class="btn btn-outline-danger">Logout</a>
-                    </Authorized>
-                    <NotAuthorized>
-                        <a href="/login" class="btn btn-primary">Login</a>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </div>
-        </div>
-        
         <!-- Shared Navigation Bar -->
         <ShowTime.Components.Shared.NavigationBar />
-        
         <AuthorizeView>
             <NotAuthorized>
-                <div class="alert alert-warning">
-                    You are not authorized to view this page. Please log in.
-                </div>
             </NotAuthorized>
         </AuthorizeView>
         <article class="content px-4">

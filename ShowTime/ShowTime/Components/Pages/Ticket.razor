@@ -5,73 +5,81 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject ITicketService TicketService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
 <div class="tickets-container">
     <div class="page-header">
         <h1 class="page-title">Ticket Management</h1>
         <p class="page-subtitle">Manage all available tickets</p>
     </div>
-    <div class="forms-section">
-        <!-- Add Ticket Form -->
-        <div class="form-card add-form">
-            <div class="form-header">
-                <h2 class="form-title">Add New Ticket</h2>
-                <div class="form-icon add-icon">+</div>
+
+    <AuthorizeView Roles="Administrator">
+        <Authorized Context="authContext">
+            <div class="forms-section">
+                <!-- Add Ticket Form -->
+                <div class="form-card add-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Add New Ticket</h2>
+                        <div class="form-icon add-icon">+</div>
+                    </div>
+                    <EditForm Model="newTicket" OnSubmit="AddTicket" FormName="addTicket" class="ticket-form">
+                        <div class="form-group">
+                            <label class="form-label">Ticket Type</label>
+                            <InputText @bind-Value="newTicket!.TicketType" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Price</label>
+                            <InputNumber @bind-Value="newTicket!.Price" class="form-input"></InputNumber>
+                        </div>
+                        <button type="submit" class="form-button add-button">Add Ticket</button>
+                    </EditForm>
+                </div>
+                <!-- Update Ticket Form -->
+                <div class="form-card update-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Update Ticket</h2>
+                        <div class="form-icon update-icon">✏️</div>
+                    </div>
+                    <EditForm Model="updateTicket" OnSubmit="UpdateTicket" class="ticket-form">
+                        <div class="form-group">
+                            <label class="form-label">Ticket ID</label>
+                            <InputNumber @bind-Value="updateTicket!.Id" class="form-input"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ticket Type</label>
+                            <InputText @bind-Value="updateTicket!.TicketType" class="form-input"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Price</label>
+                            <InputNumber @bind-Value="updateTicket!.Price" class="form-input"></InputNumber>
+                        </div>
+                        <button type="submit" class="form-button update-button">Update Ticket</button>
+                    </EditForm>
+                </div>
+                <!-- Delete Ticket Form -->
+                <div class="form-card delete-form">
+                    <div class="form-header">
+                        <h2 class="form-title">Delete Ticket</h2>
+                        <div class="form-icon delete-icon">🗑️</div>
+                    </div>
+                    <EditForm Model="deleteTicket" OnSubmit="DeleteTicket" class="ticket-form">
+                        <div class="form-group">
+                            <label class="form-label">Ticket ID</label>
+                            <InputNumber @bind-Value="deleteTicketId" class="form-input"></InputNumber>
+                        </div>
+                        <button type="submit" class="form-button delete-button">Delete Ticket</button>
+                    </EditForm>
+                </div>
             </div>
-            <EditForm Model="newTicket" OnValidSubmit="AddTicket" FormName="addTicket" class="ticket-form">
-                <div class="form-group">
-                    <label class="form-label">Ticket Type</label>
-                    <InputText @bind-Value="newTicket!.TicketType" class="form-input"></InputText>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Price</label>
-                    <InputNumber @bind-Value="newTicket!.Price" class="form-input"></InputNumber>
-                </div>
-                <button type="submit" class="form-button add-button">Add Ticket</button>
-            </EditForm>
-        </div>
-        <!-- Update Ticket Form -->
-        <div class="form-card update-form">
-            <div class="form-header">
-                <h2 class="form-title">Update Ticket</h2>
-                <div class="form-icon update-icon">✏️</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="admin-notice">
+                <div class="notice-icon">🔒</div>
+                <h3>Admin Access Required</h3>
+                <p>You need administrator privileges to manage tickets.</p>
             </div>
-            <EditForm Model="updateTicket" OnValidSubmit="UpdateTicket" class="ticket-form">
-                <div class="form-group">
-                    <label class="form-label">Ticket ID</label>
-                    <InputNumber @bind-Value="updateTicket!.Id" class="form-input"></InputNumber>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Ticket Type</label>
-                    <InputText @bind-Value="updateTicket!.TicketType" class="form-input"></InputText>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Price</label>
-                    <InputNumber @bind-Value="updateTicket!.Price" class="form-input"></InputNumber>
-                </div>
-                <button type="submit" class="form-button update-button">Update Ticket</button>
-            </EditForm>
-        </div>
-        <!-- Delete Ticket Form -->
-        <div class="form-card delete-form">
-            <div class="form-header">
-                <h2 class="form-title">Delete Ticket</h2>
-                <div class="form-icon delete-icon">🗑️</div>
-            </div>
-            <EditForm Model="deleteTicket" OnValidSubmit="DeleteTicket" class="ticket-form">
-                <div class="form-group">
-                    <label class="form-label">Ticket ID</label>
-                    <InputNumber @bind-Value="deleteTicketId" class="form-input"></InputNumber>
-                </div>
-                <button type="submit" class="form-button delete-button">Delete Ticket</button>
-            </EditForm>
-        </div>
-    </div>
-    <div class="admin-notice">
-        <div class="notice-icon">🔒</div>
-        <h3>Admin Access Required</h3>
-        <p>You need administrator privileges to manage tickets.</p>
-    </div>
+        </NotAuthorized>
+    </AuthorizeView>
 
     <!-- Tickets Display Section -->
     <div class="tickets-display-section">
@@ -92,17 +100,42 @@
                 @foreach (var ticket in tickets)
                 {
                     <div class="ticket-card">
-                        <div class="ticket-details">
-                            <span class="ticket-id">ID: @ticket.Id</span>
-                            <span class="ticket-type">Type: @ticket.TicketType</span>
-                            <span class="ticket-price">Price: @ticket.Price</span>
-                        </div>
-                        <AuthorizeView Roles="Administrator">
-                            <Authorized>
-                                <button class="btn btn-sm btn-warning" @onclick="() => StartEditTicket(ticket)">Edit</button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteTicketById(ticket.Id)">Delete</button>
-                            </Authorized>
-                        </AuthorizeView>
+                        @if (editingTicketId == ticket.Id)
+                        {
+                            <!-- Edit Mode -->
+                            <div class="ticket-details editing">
+                                <span class="ticket-id">ID: @ticket.Id</span>
+                                <div class="edit-field">
+                                    <label>Type:</label>
+                                    <input type="text" @bind="editTicketType" class="edit-input" />
+                                </div>
+                                <div class="edit-field">
+                                    <label>Price:</label>
+                                    <input type="number" @bind="editPrice" step="0.01" class="edit-input" />
+                                </div>
+                            </div>
+                            <div class="ticket-actions">
+                                <button class="btn btn-sm btn-success" @onclick="() => SaveEditTicket(ticket.Id)">Save</button>
+                                <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Display Mode -->
+                            <div class="ticket-details">
+                                <span class="ticket-id">ID: @ticket.Id</span>
+                                <span class="ticket-type">Type: @ticket.TicketType</span>
+                                <span class="ticket-price">Price: @ticket.Price</span>
+                            </div>
+                            <AuthorizeView Roles="Administrator">
+                                <Authorized>
+                                    <div class="ticket-actions">
+                                        <button class="btn btn-sm btn-warning" @onclick="() => StartEditTicket(ticket)">Edit</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteTicketById(ticket.Id)">Delete</button>
+                                    </div>
+                                </Authorized>
+                            </AuthorizeView>
+                        }
                     </div>
                 }
             </div>
@@ -110,16 +143,23 @@
     </div>
 </div>
 
+
+
 @code {
     private IList<TicketGetDto> tickets = new List<TicketGetDto>();
     [SupplyParameterFromForm]
-    private TicketCreateDto? newTicket { get; set; } = new ();
+    private TicketCreateDto? newTicket { get; set; } = new();
     [SupplyParameterFromForm]
-    private TicketUpdateDto? updateTicket{ get; set; } = new ();
+    private TicketUpdateDto? updateTicket { get; set; } = new();
     [SupplyParameterFromForm]
-	private TicketGetDto? deleteTicket { get; set; } = new();
+    private TicketGetDto? deleteTicket { get; set; } = new();
 
     private int deleteTicketId;
+
+    // editing state for inline editing (the card-ticket)
+    private int editingTicketId = -1;
+    private string editTicketType = string.Empty;
+    private int editPrice;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,16 +200,35 @@
 
     private void StartEditTicket(TicketGetDto ticket)
     {
-        updateTicket = new TicketUpdateDto
-        {
-            Id = ticket.Id,
-            Price = ticket.Price,
-            TicketType = ticket.TicketType
-        };
+        editingTicketId = ticket.Id;
+        editTicketType = ticket.TicketType;
+        editPrice = ticket.Price;
     }
 
-    private void DeleteTicketById(int id)
+    private void CancelEdit()
     {
-        deleteTicketId = id;
+        editingTicketId = -1;
+        editTicketType = string.Empty;
+        editPrice = 0;
     }
-} 
+
+    private async Task SaveEditTicket(int ticketId)
+    {
+        var updateDto = new TicketUpdateDto
+            {
+                Id = ticketId,
+                TicketType = editTicketType,
+                Price = editPrice
+            };
+
+        await TicketService.UpdateTicketAsync(updateDto);
+        await LoadTickets();
+        CancelEdit();
+    }
+
+    private async Task DeleteTicketById(int id)
+    {
+        await TicketService.DeleteTicketAsync(id);
+        await LoadTickets();
+    }
+}
