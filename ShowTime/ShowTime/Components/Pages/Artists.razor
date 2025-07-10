@@ -85,11 +85,6 @@
             </div>
         </Authorized>
         <NotAuthorized>
-            @* <div class="admin-notice"> *@
-            @*     <div class="notice-icon">🔒</div> *@
-            @*     <h3 style="color: #2c3e50;">Admin Access Required</h3> *@
-            @*     <p style="color: #3498db;">You need administrator privileges to add, update, or delete artists.</p> *@
-            @* </div> *@
         </NotAuthorized>
     </AuthorizeView>
 
@@ -138,9 +133,6 @@
                     <div class="artist-card">
                         <div class="artist-image-container">
                             <img src="@artist.Image" alt="@artist.Name" class="artist-image" />
-                            <div class="artist-overlay">
-                                <span class="artist-id">ID: @artist.Id</span>
-                            </div>
                         </div>
                         <div class="artist-details">
                             <h3 class="artist-name">@artist.Name</h3>

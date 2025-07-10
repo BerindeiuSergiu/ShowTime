@@ -141,7 +141,7 @@
                         {
                             <p class="card-text"><strong>Capacity:</strong> @festival.Capacity.ToString("N0")</p>
                         }
-                        <p class="card-text"><small class="text-muted">Festival ID: @festival.Id</small></p>
+                        @* <p class="card-text"><small class="text-muted">Festival ID: @festival.Id</small></p> *@
                         
                         <div class="festival-actions">
                             <button class="btn-secondary" @onclick="() => ToggleLineup(festival.Id)">
