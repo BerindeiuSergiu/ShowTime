@@ -1,0 +1,290 @@
+﻿@page "/user-transactions"
+@using ShowTime.BusinessLogic.Abstractions
+@using ShowTime.BusinessLogic.Dtos
+@using ShowTime.DataAccess.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IUserService UserService
+@inject IBookingService BookingService
+@inject IFestivalService FestivalService
+@inject ITicketService TicketService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<div class="transactions-container">
+    <div class="page-header">
+        <h1 class="page-title">User Transactions</h1>
+        <p class="page-subtitle">View and manage user bookings</p>
+    </div>
+
+    <AuthorizeView Roles="Administrator">
+        <Authorized>
+            <div class="search-section">
+                <div class="search-card">
+                    <div class="search-header">
+                        <h2 class="search-title">Search Users</h2>
+                        <div class="search-icon">🔍</div>
+                    </div>
+                    <div class="search-form">
+                        <div class="search-input-group">
+                            <input type="text" 
+                                   @oninput="OnSearchChanged" 
+                                   placeholder="Search by email..." 
+                                   class="search-input" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="users-section">
+                <h2 class="section-title">Users</h2>
+                <div class="users-count">
+                    Showing: @filteredUsers.Count / Total: @allUsers.Count
+                </div>
+                @if (isLoading)
+                {
+                    <div class="loading-spinner">Loading...</div>
+                }
+                else if (filteredUsers.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <h3 class="empty-title">No Users Found</h3>
+                        <p class="empty-message">Try adjusting your search criteria.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="users-list">
+                        @foreach (var user in filteredUsers)
+                        {
+                            <div class="user-card @(selectedUser?.Id == user.Id ? "selected" : "")" @onclick="() => SelectUser(user)">
+                                <div class="user-info">
+                                    <h3 class="user-email">@user.Email</h3>
+                                    <span class="user-role">@GetRoleName(user.Role)</span>
+                                </div>
+                                <div class="user-id">ID: @user.Id</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (selectedUser != null)
+            {
+                <div class="bookings-section">
+                    <h2 class="section-title">Bookings for @selectedUser.Email</h2>
+                    @if (isLoadingBookings)
+                    {
+                        <div class="loading-spinner">Loading bookings...</div>
+                    }
+                    else if (userBookings.Count == 0)
+                    {
+                        <div class="empty-state">
+                            <div class="empty-icon">🎫</div>
+                            <h3 class="empty-title">No Bookings Found</h3>
+                            <p class="empty-message">This user hasn't booked any festivals yet.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bookings-table-container">
+                            <table class="bookings-table">
+                                <thead>
+                                    <tr>
+                                        <th>Festival</th>
+                                        <th>Location</th>
+                                        <th>Date</th>
+                                        <th>Ticket Type</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in userBookings)
+                                    {
+                                        var festival = festivals.FirstOrDefault(f => f.Id == booking.FestivalId);
+                                        var ticket = tickets.FirstOrDefault(t => t.Id == booking.TicketId);
+                                        
+                                        <tr>
+                                            <td>@(festival?.Name ?? "Unknown Festival")</td>
+                                            <td>@(festival?.Location ?? "Unknown Location")</td>
+                                            <td>@(festival?.StartDate.ToString("MMM dd, yyyy") ?? "Unknown Date")</td>
+                                            <td>@(ticket?.TicketType ?? "Unknown Ticket")</td>
+                                            <td>@(ticket?.Price ?? 0) RON</td>
+                                            <td>
+                                                <button class="cancel-btn" @onclick="() => CancelBooking(booking.FestivalId, booking.UserId)">
+                                                    Cancel Booking
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(messageIsError ? "alert-danger" : "alert-info") mt-2">@message</div>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <div class="unauthorized-message">
+                <div class="unauthorized-icon">🔒</div>
+                <h2>Access Denied</h2>
+                <p>You must be an administrator to view this page.</p>
+                <a href="/" class="home-link">Return to Home</a>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    private List<UserGetDto> allUsers = new();
+    private List<UserGetDto> filteredUsers = new();
+    private UserGetDto? selectedUser;
+    private List<BookingGetDto> userBookings = new();
+    private List<FestivalGetDto> festivals = new();
+    private List<TicketGetDto> tickets = new();
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private bool isLoadingBookings = false;
+    private string message = string.Empty;
+    private bool messageIsError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Check if user is admin
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            
+            if (!user.IsInRole("Administrator"))
+            {
+                return;
+            }
+            
+            // Load all data
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error initializing page: {ex.Message}";
+            messageIsError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            allUsers = (await UserService.GetAllUsersAsync()).ToList();
+            filteredUsers = allUsers.ToList();
+            festivals = (await FestivalService.GetAllFestivalsAsync()).ToList();
+            tickets = (await TicketService.GetAllTicketsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading data: {ex.Message}";
+            messageIsError = true;
+        }
+    }
+
+    private async Task SelectUser(UserGetDto user)
+    {
+        try
+        {
+            selectedUser = user;
+            isLoadingBookings = true;
+            message = string.Empty;
+            
+            var bookings = await BookingService.GetBookingsByUserIdAsync(user.Id);
+            userBookings = bookings.Select(b => new BookingGetDto
+            {
+                FestivalId = b.FestivalId,
+                UserId = b.UserId,
+                TicketId = b.TicketId
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading bookings: {ex.Message}";
+            messageIsError = true;
+        }
+        finally
+        {
+            isLoadingBookings = false;
+        }
+    }
+
+    private async Task CancelBooking(int festivalId, int userId)
+    {
+        try
+        {
+            var success = await BookingService.CancelBookingAsync(festivalId, userId);
+            if (success)
+            {
+                message = "Booking canceled successfully!";
+                messageIsError = false;
+                
+                // Refresh the bookings for the selected user
+                if (selectedUser != null)
+                {
+                    await SelectUser(selectedUser);
+                }
+                
+                // Refresh tickets data
+                tickets = (await TicketService.GetAllTicketsAsync()).ToList();
+            }
+            else
+            {
+                message = "Failed to cancel booking.";
+                messageIsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error canceling booking: {ex.Message}";
+            messageIsError = true;
+        }
+    }
+
+    private string GetRoleName(int roleId)
+    {
+        return roleId == 0 ? "Administrator" : "User";
+    }
+
+    // Filter users based on search term
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        FilterUsers();
+        
+        // Debug output to console
+        Console.WriteLine($"[DEBUG] Search term: '{searchTerm}'");
+        Console.WriteLine($"Found {filteredUsers.Count} users for search '{searchTerm}'");
+    }
+
+    private void FilterUsers()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredUsers = allUsers.ToList();
+        }
+        else
+        {
+            filteredUsers = allUsers
+                .Where(u => u.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        
+        StateHasChanged();
+    }
+}

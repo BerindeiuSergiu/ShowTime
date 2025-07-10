@@ -6,10 +6,8 @@
         <AuthorizeView Roles="User">
             <a href="/artists" class="nav-link @(IsActive("/artists") ? "active" : "")">Artists</a>
         </AuthorizeView>
-        <AuthorizeView Roles="User">
             <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active" : "")">Festivals</a>
-        </AuthorizeView>
-        <AuthorizeView Roles="User">
+        <AuthorizeView Roles="Administrator">
             <a href="/lineups" class="nav-link @(IsActive("/lineups") ? "active" : "")">Lineups</a>
         </AuthorizeView>
         <AuthorizeView Roles="User">
@@ -19,6 +17,7 @@
             <a href="/artists" class="nav-link @(IsActive("/artists") ? "active admin-link" : "admin-link")">Artists (Admin)</a>
             <a href="/festivals" class="nav-link @(IsActive("/festivals") ? "active admin-link" : "admin-link")">Festivals (Admin)</a>
             <a href="/tickets" class="nav-link @(IsActive("/tickets") ? "active admin-link" : "admin-link")">Tickets (Admin)</a>
+            <a href="/user-transactions" class="nav-link @(IsActive("/user-transactions") ? "active admin-link" : "admin-link")">User-Transactions (Admin)</a>
         </AuthorizeView>
         <div class="auth-section">
             <AuthorizeView>
