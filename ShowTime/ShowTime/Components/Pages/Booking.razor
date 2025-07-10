@@ -38,7 +38,7 @@
                                             @foreach (var ticket in festivalTickets)
                                             {
                                                 <option value="@ticket.Id" selected="@(selectedTicketIds.TryGetValue(festival.Id, out var selId) && selId == ticket.Id ? "selected" : null)">
-                                                    @ticket.TicketType (@ticket.Price RON) - @GetAvailableTickets(ticket) available
+                                                    @ticket.TicketType (@ticket.Price RON) - @ticket.Quantity available
                                                 </option>
                                             }
                                         }
@@ -76,6 +76,7 @@
                                         {
                                             <span> | Type: @ticket.TicketType (@ticket.Price RON)</span>
                                         }
+                                        <button class="btn btn-danger btn-sm cancel-btn" @onclick="() => CancelBooking(booking.FestivalId)">Cancel</button>
                                     </div>
                                 }
                                 else
@@ -85,6 +86,7 @@
                                     {
                                         <span> | Type: @ticket.TicketType (@ticket.Price RON)</span>
                                     }
+                                    <button class="btn btn-danger btn-sm cancel-btn" @onclick="() => CancelBooking(booking.FestivalId)">Cancel</button>
                                 }
                             </li>
                         }
@@ -116,15 +118,28 @@
     // Track selected ticket type per festival
     private Dictionary<int, int> selectedTicketIds = new(); // festivalId -> ticketId
 
-    // Track booked tickets to manage availability
-    private Dictionary<int, int> bookedTicketCounts = new(); // ticketId -> count
-
     protected override async Task OnInitializedAsync()
     {
         // Debug authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
+        // Get user ID from claims
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type.EndsWith("nameidentifier"));
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
+        {
+            currentUserId = uid;
+        }
+        else
+        {
+            currentUserId = 0;
+        }
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
         // Get festivals
         try
         {
@@ -138,6 +153,7 @@
             tickets = (await TicketService.GetAllTicketsAsync()).ToList();
 
             // Organize tickets by festival
+            festivalTickets.Clear();
             foreach (var ticket in tickets)
             {
                 if (!festivalTickets.ContainsKey(ticket.FestivalId))
@@ -149,19 +165,7 @@
         }
         catch (Exception) { }
 
-        // Get user ID from claims
-        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type.EndsWith("nameidentifier"));
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
-        {
-            currentUserId = uid;
-        }
-        else
-        {
-            currentUserId = 0;
-        }
-
         await LoadUserBookings();
-        UpdateBookedTicketCounts();
     }
 
     private List<TicketGetDto> GetTicketsForFestival(int festivalId)
@@ -171,25 +175,6 @@
             return ticketList;
         }
         return new List<TicketGetDto>();
-    }
-
-    private int GetAvailableTickets(TicketGetDto ticket)
-    {
-        int bookedCount = 0;
-        if (bookedTicketCounts.TryGetValue(ticket.Id, out int count))
-        {
-            bookedCount = count;
-        }
-
-        var updatePriceTicket = new TicketUpdateDto
-            {
-                Id = ticket.Id,
-                Price = ticket.Price,
-                Quantity = ticket.Quantity - bookedCount
-            };
-
-        TicketService.UpdateTicketAsync(updatePriceTicket);
-        return Math.Max(0, ticket.Quantity - bookedCount);
     }
 
     private bool CanBookFestival(int festivalId)
@@ -206,21 +191,23 @@
         {
             return false;
         }
-        return GetAvailableTickets(ticket) > 0;
+
+        // Use the actual ticket quantity from the database
+        return ticket.Quantity > 0;
     }
 
     private async Task BookFestival(int festivalId)
     {
         messageIsError = false;
         message = string.Empty;
-        
+
         if (currentUserId == 0)
         {
             message = "Could not determine your user ID. Please log in again.";
             messageIsError = true;
             return;
         }
-        
+
         // Get selected ticketId for this festival
         if (!selectedTicketIds.TryGetValue(festivalId, out int ticketId))
         {
@@ -228,37 +215,87 @@
             messageIsError = true;
             return;
         }
-        
+
         // Check ticket availability
         var ticket = tickets.FirstOrDefault(t => t.Id == ticketId);
-        if (ticket == null || GetAvailableTickets(ticket) <= 0)
+        if (ticket == null || ticket.Quantity <= 0)
         {
             message = "This ticket is no longer available.";
             messageIsError = true;
             return;
         }
-        
+
         try
         {
+            // Create the booking (this will also update ticket quantity in the database)
             var success = await BookingService.CreateBookingAsync(festivalId, currentUserId, ticketId);
             if (success)
             {
                 message = "Booking successful!";
-                await LoadUserBookings();
-                UpdateBookedTicketCounts();
-                
+
                 // reset selection for this festival
                 if (selectedTicketIds.ContainsKey(festivalId))
                 {
                     selectedTicketIds.Remove(festivalId);
                 }
-                
+
+                // Refresh data to get updated ticket counts and bookings
+                await LoadData();
+
                 // force UI refresh
                 StateHasChanged();
             }
             else
             {
                 message = "Booking failed. Please try again.";
+                messageIsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+            messageIsError = true;
+        }
+    }
+
+    private async Task CancelBooking(int festivalId)
+    {
+        messageIsError = false;
+        message = string.Empty;
+
+        if (currentUserId == 0)
+        {
+            message = "Could not determine your user ID. Please log in again.";
+            messageIsError = true;
+            return;
+        }
+
+        try
+        {
+            // Find the booking to get the ticket ID before canceling
+            var booking = userBookings.FirstOrDefault(b => b.FestivalId == festivalId && b.UserId == currentUserId);
+            if (booking == null)
+            {
+                message = "Booking not found.";
+                messageIsError = true;
+                return;
+            }
+
+            // Cancel the booking (this will also update ticket quantity in the database)
+            var success = await BookingService.CancelBookingAsync(festivalId, currentUserId);
+            if (success)
+            {
+                message = "Booking canceled successfully!";
+
+                // Refresh data to get updated ticket counts and bookings
+                await LoadData();
+
+                // Force UI refresh
+                StateHasChanged();
+            }
+            else
+            {
+                message = "Failed to cancel booking. Please try again.";
                 messageIsError = true;
             }
         }
@@ -278,37 +315,23 @@
             {
                 var bookings = await BookingService.GetBookingsByUserIdAsync(currentUserId);
                 userBookings = bookings.Select(b => new BookingGetDto
-                {
-                    FestivalId = b.FestivalId,
-                    UserId = b.UserId,
-                    TicketId = b.TicketId
-                }).ToList();
+                    {
+                        FestivalId = b.FestivalId,
+                        UserId = b.UserId,
+                        TicketId = b.TicketId
+                    }).ToList();
             }
             catch (Exception) { }
         }
     }
-    
-    private void UpdateBookedTicketCounts()
-    {
-        bookedTicketCounts.Clear();
-        
-        // count all booked tickets
-        foreach (var booking in userBookings)
-        {
-            if (!bookedTicketCounts.ContainsKey(booking.TicketId))
-            {
-                bookedTicketCounts[booking.TicketId] = 0;
-            }
-            bookedTicketCounts[booking.TicketId]++;
-        }
-    }
 
-	// handler for ticket selection change
+    // handler for ticket selection change
     private void OnTicketSelected(int festivalId, ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int ticketId))
         {
             selectedTicketIds[festivalId] = ticketId;
+            StateHasChanged();
         }
     }
 }
