@@ -26,12 +26,10 @@ namespace ShowTime.DataAccess.Configuration
             // relationships
             builder.HasOne(l => l.Festival)
                 .WithMany(f => f.Lineups)
-                .HasForeignKey(l => l.FestivalId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(l => l.FestivalId);
             builder.HasOne(l => l.Artist)
                 .WithMany(a => a.Lineups)
-                .HasForeignKey(l => l.ArtistId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(l => l.ArtistId);
 
         }
 

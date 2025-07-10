@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
 @inject ITicketService TicketService
+@inject IFestivalService FestivalService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
@@ -31,6 +32,20 @@
                             <label class="form-label">Price</label>
                             <InputNumber @bind-Value="newTicket!.Price" class="form-input"></InputNumber>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <InputNumber @bind-Value="newTicket!.Quantity" class="form-input"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Festival</label>
+                            <InputSelect @bind-Value="newTicket!.FestivalId" class="form-input">
+                                <option value="0">-- Select Festival --</option>
+                                @foreach (var festival in festivals)
+                                {
+                                    <option value="@festival.Id">@festival.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
                         <button type="submit" class="form-button add-button">Add Ticket</button>
                     </EditForm>
                 </div>
@@ -52,6 +67,20 @@
                         <div class="form-group">
                             <label class="form-label">Price</label>
                             <InputNumber @bind-Value="updateTicket!.Price" class="form-input"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <InputNumber @bind-Value="updateTicket!.Quantity" class="form-input"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Festival</label>
+                            <InputSelect @bind-Value="updateTicket!.FestivalId" class="form-input">
+                                <option value="0">-- Select Festival --</option>
+                                @foreach (var festival in festivals)
+                                {
+                                    <option value="@festival.Id">@festival.Name</option>
+                                }
+                            </InputSelect>
                         </div>
                         <button type="submit" class="form-button update-button">Update Ticket</button>
                     </EditForm>
@@ -113,6 +142,19 @@
                                     <label>Price:</label>
                                     <input type="number" @bind="editPrice" step="0.01" class="edit-input" />
                                 </div>
+                                <div class="edit-field">
+                                    <label>Quantity:</label>
+                                    <input type="number" @bind="editQuantity" class="edit-input" />
+                                </div>
+                                <div class="edit-field">
+                                    <label>Festival:</label>
+                                    <select @bind="editFestivalId" class="edit-input">
+                                        @foreach (var festival in festivals)
+                                        {
+                                            <option value="@festival.Id">@festival.Name</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                             <div class="ticket-actions">
                                 <button class="btn btn-sm btn-success" @onclick="() => SaveEditTicket(ticket.Id)">Save</button>
@@ -126,6 +168,8 @@
                                 <span class="ticket-id">ID: @ticket.Id</span>
                                 <span class="ticket-type">Type: @ticket.TicketType</span>
                                 <span class="ticket-price">Price: @ticket.Price</span>
+                                <span class="ticket-quantity">Quantity: @ticket.Quantity</span>
+                                <span class="ticket-festival">Festival: @GetFestivalName(ticket.FestivalId)</span>
                             </div>
                             <AuthorizeView Roles="Administrator">
                                 <Authorized>
@@ -147,6 +191,7 @@
 
 @code {
     private IList<TicketGetDto> tickets = new List<TicketGetDto>();
+    private IList<FestivalGetDto> festivals = new List<FestivalGetDto>();
     [SupplyParameterFromForm]
     private TicketCreateDto? newTicket { get; set; } = new();
     [SupplyParameterFromForm]
@@ -160,10 +205,18 @@
     private int editingTicketId = -1;
     private string editTicketType = string.Empty;
     private int editPrice;
+    private int editQuantity;
+    private int editFestivalId;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadFestivals();
         await LoadTickets();
+    }
+
+    private async Task LoadFestivals()
+    {
+        festivals = await FestivalService.GetAllFestivalsAsync();
     }
 
     private async Task LoadTickets()
@@ -173,7 +226,7 @@
 
     private async Task AddTicket()
     {
-        if (newTicket != null)
+        if (newTicket != null && newTicket.FestivalId > 0)
         {
             await TicketService.AddTicketAsync(newTicket);
             newTicket = new TicketCreateDto();
@@ -203,6 +256,8 @@
         editingTicketId = ticket.Id;
         editTicketType = ticket.TicketType;
         editPrice = ticket.Price;
+        editQuantity = ticket.Quantity;
+        editFestivalId = ticket.FestivalId;
     }
 
     private void CancelEdit()
@@ -210,6 +265,8 @@
         editingTicketId = -1;
         editTicketType = string.Empty;
         editPrice = 0;
+        editQuantity = 0;
+        editFestivalId = 0;
     }
 
     private async Task SaveEditTicket(int ticketId)
@@ -218,7 +275,9 @@
             {
                 Id = ticketId,
                 TicketType = editTicketType,
-                Price = editPrice
+                Price = editPrice,
+                Quantity = editQuantity,
+                FestivalId = editFestivalId
             };
 
         await TicketService.UpdateTicketAsync(updateDto);
@@ -230,5 +289,11 @@
     {
         await TicketService.DeleteTicketAsync(id);
         await LoadTickets();
+    }
+
+    private string GetFestivalName(int festivalId)
+    {
+        var festival = festivals.FirstOrDefault(f => f.Id == festivalId);
+        return festival?.Name ?? $"Festival ID: {festivalId}";
     }
 }

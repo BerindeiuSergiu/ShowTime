@@ -12,5 +12,6 @@ namespace ShowTime.BusinessLogic.Abstractions
         Task<Ticket> AddTicketAsync(TicketCreateDto ticketCreateDto);
         Task<Ticket> DeleteTicketAsync(int id);
         Task<Ticket> UpdateTicketAsync(TicketUpdateDto ticketUpdateDto);
+        public Task<Ticket> UpdateQuantity(TicketUpdateDto ticketUpdateDto);
     }
 } 

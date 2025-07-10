@@ -26,7 +26,9 @@ namespace ShowTime.BusinessLogic.Services
             {
                 Id = ticket.Id,
                 Price = ticket.Price,
-                TicketType = ticket.TicketType
+                TicketType = ticket.TicketType,
+                Quantity = ticket.Quantity,
+                FestivalId = ticket.FestivalId
             };
         }
 
@@ -37,7 +39,9 @@ namespace ShowTime.BusinessLogic.Services
             {
                 Id = ticket.Id,
                 Price = ticket.Price,
-                TicketType = ticket.TicketType
+                TicketType = ticket.TicketType,
+                Quantity = ticket.Quantity,
+                FestivalId = ticket.FestivalId
             }).ToList();
         }
 
@@ -46,7 +50,9 @@ namespace ShowTime.BusinessLogic.Services
             var ticket = new Ticket
             {
                 Price = ticketCreateDto.Price,
-                TicketType = ticketCreateDto.TicketType
+                TicketType = ticketCreateDto.TicketType,
+                Quantity = ticketCreateDto.Quantity,
+                FestivalId = ticketCreateDto.FestivalId
             };
             return await _ticketRepository.AddAsync(ticket);
         }
@@ -67,7 +73,20 @@ namespace ShowTime.BusinessLogic.Services
                 throw new KeyNotFoundException($"Ticket with ID {ticketUpdateDto.Id} not found.");
             ticket.Price = ticketUpdateDto.Price;
             ticket.TicketType = ticketUpdateDto.TicketType;
+            ticket.Quantity = ticketUpdateDto.Quantity;
             return await _ticketRepository.UpdateAsync(ticket);
+        }
+
+
+        public async Task<Ticket> UpdateQuantity(TicketUpdateDto ticketUpdateDto)
+        {
+            var ticket = await _ticketRepository.GetByIdAsync(ticketUpdateDto.Id);
+
+            if(ticket == null)
+                throw new KeyNotFoundException($"Ticket with ID {ticketUpdateDto.Id} not found to change price.");
+
+            return await _ticketRepository.UpdateAsync(ticket);
+
         }
 
     }

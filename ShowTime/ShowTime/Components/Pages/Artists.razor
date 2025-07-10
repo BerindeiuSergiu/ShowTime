@@ -87,8 +87,8 @@
         <NotAuthorized>
             <div class="admin-notice">
                 <div class="notice-icon">🔒</div>
-                <h3>Admin Access Required</h3>
-                <p>You need administrator privileges to add, update, or delete artists.</p>
+                <h3 style="color: #2c3e50;">Admin Access Required</h3>
+                <p style="color: #3498db;">You need administrator privileges to add, update, or delete artists.</p>
             </div>
         </NotAuthorized>
     </AuthorizeView>
@@ -96,7 +96,7 @@
     <!-- Filter section-->
     <div class="form-group">
         <label class="form-label">
-            Filter by Genre: <span style="font-weight:normal;">@SelectedGenre</span>
+            Filter by Genre: <span style="font-weight:normal; color: #3498db;">@SelectedGenre</span>
         </label>
         <select @bind="SelectedGenre" @bind:event="onchange" TValue="string" class="form-control">
             <option value="">All Genres</option>

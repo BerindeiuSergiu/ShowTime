@@ -9,125 +9,146 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<h3>Book a Festival</h3>
+<div class="booking-section">
+    <h3>Book a Festival</h3>
 
-<!-- Main Content -->
-<AuthorizeView Roles="User">
-    <Authorized Context="authContext">
-        <div class="booking-section">
-            <h4>Available Festivals</h4>
-            @if (festivals.Count == 0)
-            {
-                <p>No festivals available for booking.</p>
-            }
-            else
-            {
-                <ul class="festival-list">
-                    @foreach (var festival in festivals)
-                    {
-                        <li class="festival-item">
-                            <strong>@festival.Name</strong> - @festival.Location (@festival.StartDate.ToString("MMM dd, yyyy"))
-                            <div>
-                                <label for="ticket-select-@festival.Id">Select Ticket Type:</label>
-                                <select id="ticket-select-@festival.Id" @onchange="e => OnTicketSelected(festival.Id, e)">
-                                    <option value="">-- Select --</option>
-                                    @foreach (var ticket in tickets)
-                                    {
-                                        <option value="@ticket.Id" selected="@(selectedTicketIds.TryGetValue(festival.Id, out var selId) && selId == ticket.Id ? "selected" : null)">@ticket.TicketType (@ticket.Price RON)</option>
-                                    }
-                                </select>
-                                <button class="btn btn-primary btn-sm" @onclick="() => BookFestival(festival.Id)">Book</button>
-                            </div>
-                        </li>
-                    }
-                </ul>
-            }
-        </div>
-        <div class="user-bookings-section mt-4">
-            <h4>Your Bookings</h4>
-            @if (userBookings.Count == 0)
-            {
-                <p>You have no bookings yet.</p>
-            }
-            else
-            {
-                <ul class="booking-list">
-                    @foreach (var booking in userBookings)
-                    {
-                        var festival = festivals.FirstOrDefault(f => f.Id == booking.FestivalId);
-                        var ticket = tickets.FirstOrDefault(t => t.Id == booking.TicketId);
-                        <li class="booking-item">
-                            @if (festival != null)
-                            {
+    <!-- Main Content -->
+    <AuthorizeView Roles="User">
+        <Authorized Context="authContext">
+            <div class="booking-section">
+                <h4>Available Festivals</h4>
+                @if (festivals.Count == 0)
+                {
+                    <p style="color: #2c3e50;">No festivals available for booking.</p>
+                }
+                else
+                {
+                    <ul class="festival-list">
+                        @foreach (var festival in festivals)
+                        {
+                            var festivalTickets = GetTicketsForFestival(festival.Id);
+                            <li class="festival-item">
+                                <strong>@festival.Name</strong> - @festival.Location (@festival.StartDate.ToString("MMM dd, yyyy"))
                                 <div>
-                                    <span>@festival.Name</span> - <span>@festival.Location</span> (<span>@festival.StartDate.ToString("MMM dd, yyyy")</span>)
+                                    <label for="ticket-select-@festival.Id">Select Ticket Type:</label>
+                                    <select id="ticket-select-@festival.Id" @onchange="e => OnTicketSelected(festival.Id, e)">
+                                        <option value="">-- Select --</option>
+                                        @if (festivalTickets.Count > 0)
+                                        {
+                                            @foreach (var ticket in festivalTickets)
+                                            {
+                                                <option value="@ticket.Id" selected="@(selectedTicketIds.TryGetValue(festival.Id, out var selId) && selId == ticket.Id ? "selected" : null)">
+                                                    @ticket.TicketType (@ticket.Price RON) - @GetAvailableTickets(ticket) available
+                                                </option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <option value="" disabled>No tickets available for this festival</option>
+                                        }
+                                    </select>
+                                    <button class="btn btn-primary btn-sm" @onclick="() => BookFestival(festival.Id)" disabled="@(!CanBookFestival(festival.Id))">Book</button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+            <div class="user-bookings-section mt-4">
+                <h4>Your Bookings</h4>
+                @if (userBookings.Count == 0)
+                {
+                    <p style="color: #2c3e50;">You have no bookings yet.</p>
+                }
+                else
+                {
+                    <ul class="booking-list">
+                        @foreach (var booking in userBookings)
+                        {
+                            var festival = festivals.FirstOrDefault(f => f.Id == booking.FestivalId);
+                            var ticket = tickets.FirstOrDefault(t => t.Id == booking.TicketId);
+                            <li class="booking-item">
+                                @if (festival != null)
+                                {
+                                    <div>
+                                        <span>@festival.Name</span> - <span>@festival.Location</span> (<span>@festival.StartDate.ToString("MMM dd, yyyy")</span>)
+                                        @if (ticket != null)
+                                        {
+                                            <span> | Type: @ticket.TicketType (@ticket.Price RON)</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>Festival ID: @booking.FestivalId</span>
                                     @if (ticket != null)
                                     {
                                         <span> | Type: @ticket.TicketType (@ticket.Price RON)</span>
                                     }
-                                </div>
-                            }
-                            else
-                            {
-                                <span>Festival ID: @booking.FestivalId</span>
-                                @if (ticket != null)
-                                {
-                                    <span> | Type: @ticket.TicketType (@ticket.Price RON)</span>
                                 }
-                            }
-                        </li>
-                    }
-                </ul>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(messageIsError ? "alert-danger" : "alert-info") mt-2">@message</div>
             }
-        </div>
-        @if (!string.IsNullOrEmpty(message))
-        {
-            <div class="alert alert-info mt-2">@message</div>
-        }
-    </Authorized>
-    <NotAuthorized>
-        <div class="alert alert-warning">
-            <strong>NOT AUTHORIZED:</strong> You must be logged in to book a festival.
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-warning">
+                <strong>NOT AUTHORIZED:</strong> You must be logged in to book a festival.
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
 
 @code {
     private List<FestivalGetDto> festivals = new();
     private List<BookingGetDto> userBookings = new();
     private List<TicketGetDto> tickets = new();
+    private Dictionary<int, List<TicketGetDto>> festivalTickets = new(); // festivalId -> list of tickets
     private int currentUserId;
     private string message = string.Empty;
+    private bool messageIsError = false;
+
     // Track selected ticket type per festival
     private Dictionary<int, int> selectedTicketIds = new(); // festivalId -> ticketId
-    
+
+    // Track booked tickets to manage availability
+    private Dictionary<int, int> bookedTicketCounts = new(); // ticketId -> count
+
     protected override async Task OnInitializedAsync()
     {
         // Debug authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        // isAuthenticated = user.Identity?.IsAuthenticated ?? false;
-        // userIdentityName = user.Identity?.Name;
-        // userRoles = user.Claims.Where(c => c.Type == "role" || c.Type.EndsWith("role")).Select(c => c.Value).ToList();
-        // totalClaims = user.Claims.Count();
-        // foreach (var claim in user.Claims)
-        // {
-        //     var claimKey = $"{claim.Type}";
-        //     var claimValue = claim.Value;
-        //     allClaims[claimKey] = claimValue;
-        // }
+
         // Get festivals
         try
         {
             festivals = (await FestivalService.GetAllFestivalsAsync()).ToList();
         }
         catch (Exception) { }
+
         // Get tickets
         try
         {
             tickets = (await TicketService.GetAllTicketsAsync()).ToList();
+
+            // Organize tickets by festival
+            foreach (var ticket in tickets)
+            {
+                if (!festivalTickets.ContainsKey(ticket.FestivalId))
+                {
+                    festivalTickets[ticket.FestivalId] = new List<TicketGetDto>();
+                }
+                festivalTickets[ticket.FestivalId].Add(ticket);
+            }
         }
         catch (Exception) { }
+
         // Get user ID from claims
         var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "userid" || c.Type.EndsWith("nameidentifier"));
         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
@@ -138,23 +159,85 @@
         {
             currentUserId = 0;
         }
+
         await LoadUserBookings();
+        UpdateBookedTicketCounts();
+    }
+
+    private List<TicketGetDto> GetTicketsForFestival(int festivalId)
+    {
+        if (festivalTickets.TryGetValue(festivalId, out var ticketList))
+        {
+            return ticketList;
+        }
+        return new List<TicketGetDto>();
+    }
+
+    private int GetAvailableTickets(TicketGetDto ticket)
+    {
+        int bookedCount = 0;
+        if (bookedTicketCounts.TryGetValue(ticket.Id, out int count))
+        {
+            bookedCount = count;
+        }
+
+        var updatePriceTicket = new TicketUpdateDto
+            {
+                Id = ticket.Id,
+                Price = ticket.Price,
+                Quantity = ticket.Quantity - bookedCount
+            };
+
+        TicketService.UpdateTicketAsync(updatePriceTicket);
+        return Math.Max(0, ticket.Quantity - bookedCount);
+    }
+
+    private bool CanBookFestival(int festivalId)
+    {
+        // Check if a ticket is selected
+        if (!selectedTicketIds.TryGetValue(festivalId, out int ticketId))
+        {
+            return false;
+        }
+
+        // Check if the selected ticket has available quantity
+        var ticket = tickets.FirstOrDefault(t => t.Id == ticketId);
+        if (ticket == null)
+        {
+            return false;
+        }
+        return GetAvailableTickets(ticket) > 0;
     }
 
     private async Task BookFestival(int festivalId)
     {
+        messageIsError = false;
         message = string.Empty;
+        
         if (currentUserId == 0)
         {
             message = "Could not determine your user ID. Please log in again.";
+            messageIsError = true;
             return;
         }
+        
         // Get selected ticketId for this festival
         if (!selectedTicketIds.TryGetValue(festivalId, out int ticketId))
         {
             message = "Please select a ticket type.";
+            messageIsError = true;
             return;
         }
+        
+        // Check ticket availability
+        var ticket = tickets.FirstOrDefault(t => t.Id == ticketId);
+        if (ticket == null || GetAvailableTickets(ticket) <= 0)
+        {
+            message = "This ticket is no longer available.";
+            messageIsError = true;
+            return;
+        }
+        
         try
         {
             var success = await BookingService.CreateBookingAsync(festivalId, currentUserId, ticketId);
@@ -162,15 +245,27 @@
             {
                 message = "Booking successful!";
                 await LoadUserBookings();
+                UpdateBookedTicketCounts();
+                
+                // reset selection for this festival
+                if (selectedTicketIds.ContainsKey(festivalId))
+                {
+                    selectedTicketIds.Remove(festivalId);
+                }
+                
+                // force UI refresh
+                StateHasChanged();
             }
             else
             {
                 message = "Booking failed. Please try again.";
+                messageIsError = true;
             }
         }
         catch (Exception ex)
         {
             message = $"Error: {ex.Message}";
+            messageIsError = true;
         }
     }
 
@@ -192,8 +287,23 @@
             catch (Exception) { }
         }
     }
+    
+    private void UpdateBookedTicketCounts()
+    {
+        bookedTicketCounts.Clear();
+        
+        // count all booked tickets
+        foreach (var booking in userBookings)
+        {
+            if (!bookedTicketCounts.ContainsKey(booking.TicketId))
+            {
+                bookedTicketCounts[booking.TicketId] = 0;
+            }
+            bookedTicketCounts[booking.TicketId]++;
+        }
+    }
 
-    // Handler for ticket selection change
+	// handler for ticket selection change
     private void OnTicketSelected(int festivalId, ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int ticketId))

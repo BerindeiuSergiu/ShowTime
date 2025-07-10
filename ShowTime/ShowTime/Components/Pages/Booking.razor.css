@@ -1,1 +1,268 @@
-﻿
+﻿/* Booking page - Impressive modern styling */
+
+.booking-section {
+    padding: 40px;
+    background: #f0f4f8;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    color: #2c3e50;
+}
+
+.booking-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="white" fill-opacity="0.05"/><path d="M0 0L100 100M100 0L0 100" stroke="lightblue" stroke-width="0.5" stroke-opacity="0.1"/></svg>');
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes glow {
+    from { filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+    to { filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
+}
+
+h4 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #3498db;
+    margin: 30px 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.festival-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.festival-item {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    color: #333;
+}
+
+.festival-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #3498db;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.festival-item:hover::before {
+    transform: scaleX(1);
+}
+
+.festival-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.festival-item strong {
+    font-size: 1.3rem;
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 700;
+}
+
+.festival-item div {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.festival-item label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.festival-item select {
+    padding: 10px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
+    background-color: white;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.festival-item select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 8px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(52, 152, 219, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+}
+
+.booking-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.booking-item {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-left: 4px solid #3498db;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.booking-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+}
+
+.booking-item div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.booking-item span {
+    font-weight: 500;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #1e40af;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #92400e;
+}
+
+.user-bookings-section {
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.mt-4 {
+    margin-top: 2rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .booking-section {
+        padding: 20px;
+    }
+    
+    h3 {
+        font-size: 2rem;
+    }
+    
+    h4 {
+        font-size: 1.5rem;
+    }
+    
+    .festival-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .festival-item {
+        padding: 20px;
+    }
+}

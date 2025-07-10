@@ -2,7 +2,7 @@
 
 .festivals-container {
     padding: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f0f4f8;
     min-height: 100vh;
     position: relative;
     overflow: hidden;
@@ -15,8 +15,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="white" fill-opacity="0.05"/><path d="M0 0L100 100M100 0L0 100" stroke="lightblue" stroke-width="0.5" stroke-opacity="0.1"/></svg>');
     pointer-events: none;
+    opacity: 0.5;
 }
 
 /* Page Header Styles */
@@ -30,19 +31,13 @@
 .page-title {
     font-size: 3.5rem;
     font-weight: 800;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    color: #2c3e50;
     margin-bottom: 10px;
-    background: linear-gradient(45deg, #fff, #f0f8ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glow 2s ease-in-out infinite alternate;
 }
 
 .page-subtitle {
     font-size: 1.3rem;
-    color: rgba(255,255,255,0.9);
+    color: #3498db;
     font-weight: 300;
 }
 
@@ -66,8 +61,8 @@
     backdrop-filter: blur(15px);
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
@@ -80,7 +75,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: #3498db;
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
@@ -91,7 +86,7 @@
 
 .form-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
 .form-header {
@@ -104,10 +99,7 @@
 .form-title {
     font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #3498db;
     margin: 0;
 }
 
@@ -119,7 +111,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: #3498db;
     color: white;
     font-weight: bold;
 }
@@ -230,10 +222,10 @@
 .section-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: white;
+    color: #2c3e50;
     text-align: center;
     margin: 40px 0 30px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: none;
     position: relative;
     z-index: 1;
 }
@@ -242,10 +234,10 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(15px);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.2);
     margin: 40px 0;
     position: relative;
     z-index: 1;
@@ -256,19 +248,19 @@
     margin-bottom: 20px;
     display: block;
     animation: float 3s ease-in-out infinite;
+    color: #3498db;
 }
 
 .empty-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #2c3e50;
     margin-bottom: 10px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .empty-message {
     font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: #7f8c8d;
     line-height: 1.6;
 }
 
@@ -286,8 +278,8 @@
     backdrop-filter: blur(15px);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
 }
@@ -299,7 +291,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: #3498db;
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }

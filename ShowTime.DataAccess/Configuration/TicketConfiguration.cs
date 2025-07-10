@@ -24,6 +24,17 @@ namespace ShowTime.DataAccess.Configuration
 
             builder.Property(b => b.Price)
                 .IsRequired();
+            builder.Property(b => b.Quantity)
+                .IsRequired();
+            // configurare relatii
+
+            builder.HasOne(a => a.Festival)
+                .WithMany(b => b.Tickets)
+                .HasForeignKey(a => a.FestivalId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+
 
         }
     }
